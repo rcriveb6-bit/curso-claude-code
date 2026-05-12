@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Windmar Home · Cotizador Solar</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#1B4B8A;--bd:#0D2E5C;--orange:#F7941D;--green:#16A34A;
+  --red:#DC2626;--bg:#EEF2F7;--card:#fff;--text:#1A2B3C;
+  --muted:#64748B;--border:#E2E8F0;--purple:#6D28D9
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ── Header ── */
+header{
+  background:linear-gradient(135deg,var(--bd) 0%,#1B4B8A 60%,#105C36 100%);
+  padding:14px 20px 16px;color:white;
+  position:sticky;top:0;z-index:100;
+  box-shadow:0 2px 8px rgba(0,0,0,.25)
+}
+.h-inner{max-width:1020px;margin:0 auto;display:flex;align-items:center;gap:14px;justify-content:space-between}
+.h-left{display:flex;align-items:center;gap:12px}
+.h-logo{height:52px;width:auto;display:block}
+.h-title{font-size:18px;font-weight:700;line-height:1.2}
+.h-sub{font-size:11px;opacity:.75;margin-top:2px}
+.h-wm{text-align:right;font-size:10px;opacity:.7;line-height:1.6}
+
+/* ── Layout ── */
+.container{max-width:1020px;margin:0 auto;padding:14px 14px 32px}
+.panel{
+  background:var(--card);border-radius:14px;padding:18px 20px;margin-bottom:14px;
+  box-shadow:0 1px 4px rgba(0,0,0,.08)
+}
+.ptitle{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.pnum{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;background:var(--blue);color:white;border-radius:50%;font-size:11px;font-weight:700;flex-shrink:0}
+
+/* ── Grids ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.g3{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.g4{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+
+/* ── Form ── */
+.field{display:flex;flex-direction:column;gap:4px;margin-bottom:8px}
+.field label{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.3px}
+.field input{
+  border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;
+  font-size:15px;font-weight:500;color:var(--text);outline:none;
+  transition:border-color .15s,box-shadow .15s;width:100%
+}
+.field input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(27,75,138,.1)}
+
+/* ── kWh hero ── */
+.kwh-wrap{background:linear-gradient(135deg,#EFF6FF,#F0FDF4);border-radius:12px;padding:24px;text-align:center}
+.kwh-wrap label{display:block;font-size:14px;font-weight:700;color:var(--blue);margin-bottom:10px;letter-spacing:.3px}
+.kwh-wrap input{
+  font-size:36px;font-weight:800;text-align:center;padding:16px 20px;
+  border-radius:12px;border:2px solid var(--blue);width:100%;max-width:340px;outline:none;
+  transition:box-shadow .15s
+}
+.kwh-wrap input:focus{box-shadow:0 0 0 5px rgba(27,75,138,.12)}
+.kwh-hint{font-size:11px;color:var(--muted);margin-top:8px}
+
+/* ── Chips ── */
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px;justify-content:center}
+.chip{background:#EFF6FF;border-radius:10px;padding:10px 16px;text-align:center;flex:1;min-width:100px}
+.chip-v{font-size:22px;font-weight:700;color:var(--blue)}
+.chip-l{font-size:11px;color:var(--muted);margin-top:2px}
+.chip-p{background:#F0FDF4}.chip-p .chip-v{color:var(--green);font-size:18px}
+
+/* ── Batteries ── */
+.bats{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.bat{
+  flex:1;min-width:70px;padding:10px 6px;border:1.5px solid var(--border);
+  border-radius:10px;background:white;cursor:pointer;text-align:center;
+  transition:all .18s
+}
+.bat:hover{border-color:var(--blue);color:var(--blue);transform:translateY(-1px)}
+.bat.on{border-color:var(--blue);background:var(--blue);color:white}
+.bat .bv{font-size:16px;font-weight:700}
+.bat .bs{font-size:9px;margin-top:2px;opacity:.75}
+
+/* ── Finance grid ── */
+.fin-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:12px}
+.fc{
+  background:white;border:1.5px solid var(--border);border-radius:14px;padding:16px;
+  position:relative;transition:all .18s
+}
+.fc:not(.off):hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.1)}
+.fc.off{opacity:.35;pointer-events:none}
+.rpills{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
+.rp{
+  font-size:10px;font-weight:600;padding:3px 7px;border-radius:20px;cursor:pointer;
+  border:1px solid var(--border);background:white;color:var(--muted);transition:all .1s
+}
+.rp.on{background:var(--blue);color:white;border-color:var(--blue)}
+.ft{font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px}
+.fp{font-size:28px;font-weight:800;color:var(--text);line-height:1}
+.fp span{font-size:12px;font-weight:400;color:var(--muted)}
+.fd{border:none;border-top:1px solid #F1F5F9;margin:10px 0}
+.fr{display:flex;justify-content:space-between;margin-bottom:4px}
+.frl{font-size:10px;color:var(--muted)}
+.frv{font-size:13px;font-weight:600}
+.fsav{font-size:12px;font-weight:700;color:var(--green);margin-top:8px}
+.fnote{font-size:10px;margin-top:8px;padding:5px 8px;border-radius:6px;line-height:1.4}
+.nown{background:#F0FDF4;color:#15803D}
+.nwarn{background:#FFF7ED;color:#C2410C}
+.ninfo{background:#EFF6FF;color:#1E40AF}
+
+/* ── Enfin ── */
+.esplit{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.eopt{background:#FAFAFA;border-radius:10px;padding:14px}
+.eopt-t{font-size:11px;color:var(--muted);margin-bottom:4px}
+.eopt-p{font-size:22px;font-weight:700;color:var(--purple)}
+.eopt-p span{font-size:12px;font-weight:400;color:var(--muted)}
+
+/* ── LUMA bar ── */
+.luma-bar{background:#FFF7ED;border:1px solid #FED7AA;border-radius:12px;padding:14px 16px;margin-bottom:14px}
+.lg{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-top:10px}
+.ls{text-align:center}
+.ls .v{font-size:18px;font-weight:700}
+.ls .l{font-size:10px;color:var(--muted);margin-top:2px}
+.ls .v.d{color:var(--red)}
+
+/* ── Alerts ── */
+.alert{border-radius:8px;padding:10px 14px;font-size:12px;margin-bottom:10px;line-height:1.5}
+.aw{background:#FFF7ED;color:#92400E;border:1px solid #FED7AA}
+.ai{background:#EFF6FF;color:#1E40AF;border:1px solid #BFDBFE}
+.ag{background:#F0FDF4;color:#15803D;border:1px solid #BBF7D0}
+
+/* ── Buttons ── */
+.acts{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.btn{
+  padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;
+  cursor:pointer;border:none;display:flex;align-items:center;gap:6px;
+  transition:all .15s
+}
+.bblue{background:var(--blue);color:white}.bblue:hover{background:var(--bd)}
+.bblue:disabled{opacity:.65;cursor:default}
+.bgreen{background:var(--green);color:white}.bgreen:hover{background:#15803D}
+.borg{background:var(--orange);color:white}
+.bline{background:white;color:var(--text);border:1.5px solid var(--border)}.bline:hover{border-color:var(--blue);color:var(--blue)}
+.btog{background:none;border:none;cursor:pointer;font-size:13px;font-weight:600;color:var(--blue);display:flex;align-items:center;gap:6px;padding:0}
+
+/* ── Backlog table ── */
+.bltbl{width:100%;border-collapse:collapse;font-size:12px;margin-top:12px}
+.bltbl th{background:var(--bg);padding:8px 10px;text-align:left;font-weight:600;color:var(--muted);border-bottom:1px solid var(--border)}
+.bltbl td{padding:8px 10px;border-bottom:1px solid #F1F5F9}
+.bltbl tr:last-child td{border-bottom:none}
+
+/* ── Project toggle ── */
+.proj-toggle{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.ptog{
+  flex:1;min-width:120px;padding:10px 14px;border-radius:10px;
+  border:1.5px solid var(--border);background:white;color:var(--muted);
+  font-size:13px;font-weight:600;cursor:pointer;text-align:center;transition:all .18s
+}
+.ptog:hover{border-color:var(--blue);color:var(--blue)}
+.ptog.active{background:var(--blue);color:white;border-color:var(--blue)}
+
+/* ── Sellado plan selector ── */
+.plan-btn{
+  flex:1;min-width:90px;padding:10px 8px;border:1.5px solid var(--border);
+  border-radius:10px;background:white;cursor:pointer;text-align:center;transition:all .18s
+}
+.plan-btn:hover{border-color:var(--orange)}
+.plan-btn.on{border-color:var(--orange);background:var(--orange);color:white}
+.plan-btn .pv{font-size:14px;font-weight:700}
+.plan-btn .ps{font-size:9px;margin-top:2px;opacity:.75}
+
+/* ── Section subheading ── */
+.sec-fin{
+  font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.7px;padding:10px 0 6px;margin-top:4px;
+  border-top:1px solid var(--border);display:flex;align-items:center;gap:8px
+}
+.sec-fin:first-child{border-top:none;margin-top:0;padding-top:0}
+.fin-badge{
+  font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:.5px
+}
+.fb-oriental{background:#EFF6FF;color:#1B4B8A}
+.fb-wh{background:#FFF3E0;color:#E65100}
+.fb-enfin{background:#F5F3FF;color:#6D28D9}
+.fb-roofing{background:#F0FDF4;color:#15803D}
+
+/* ── Results fade-in ── */
+#results{
+  opacity:0;transition:opacity .35s ease;
+  display:none
+}
+#results.visible{opacity:1}
+
+/* ── Footer ── */
+.fwm{text-align:center;font-size:10px;color:#94A3B8;padding:16px 0 24px;line-height:1.6}
+.empty{text-align:center;padding:32px 20px;color:var(--muted);font-size:13px}
+
+/* ── Responsive ── */
+@media(max-width:768px){
+  .fin-grid{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+  .h-wm{display:none}
+}
+@media(max-width:600px){
+  .g2{grid-template-columns:1fr}
+  .fp{font-size:22px}
+  .chip-v{font-size:18px}
+  .esplit{grid-template-columns:1fr}
+  .kwh-wrap input{font-size:28px}
+}
+@media(max-width:480px){
+  .fin-grid{grid-template-columns:1fr}
+  .chips{gap:8px}
+  .chip{min-width:80px}
+}
+@media(min-width:1200px){
+  .container{max-width:1100px}
+  .h-inner{max-width:1100px}
+}
+</style>
+</head>
+<body>
+
+<header>
+<div class="h-inner">
+  <div class="h-left">
+    <img src="WindMar%20Home.png" class="h-logo" alt="Windmar Home">
+    <div>
+      <div class="h-title">Cotizador</div>
+      <div class="h-sub">Solar · Roofing · Jul 2025</div>
+    </div>
+  </div>
+  <div class="h-wm" id="headerConsultor">
+    Consultor<br>787-000-0000
+  </div>
+</div>
+</header>
+
+<div class="container">
+
+  <!-- Panel 1: Información -->
+  <div class="panel">
+    <div class="ptitle"><span class="pnum">1</span> Información del cliente y consultor</div>
+    <div class="g2">
+      <div>
+        <div class="field"><label>Nombre del cliente</label><input type="text" id="cName" placeholder="Ej: María González" oninput="updateHeader()"></div>
+        <div class="field"><label>Email</label><input type="email" id="cEmail" placeholder="cliente@email.com"></div>
+        <div class="field"><label>Teléfono</label><input type="tel" id="cPhone" placeholder="787-000-0000"></div>
+      </div>
+      <div>
+        <div class="field"><label>Nombre del consultor</label><input type="text" id="conName" placeholder="Tu nombre" oninput="updateHeader()"></div>
+        <div class="field"><label>Teléfono consultor</label><input type="tel" id="conPhone" placeholder="787-000-0000" oninput="updateHeader()"></div>
+        <div class="field">
+          <label>Tarifa LUMA ($/kWh)</label>
+          <input type="number" id="lumaRate" value="0.27" min="0.10" max="0.60" step="0.01" oninput="compute()">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toggle tipo de proyecto -->
+  <div class="proj-toggle">
+    <button class="ptog active" id="togSolar"    onclick="setProj('solar')">☀️ Solo Solar</button>
+    <button class="ptog"        id="togRoofing"  onclick="setProj('roofing')">🏠 Solo Roofing</button>
+    <button class="ptog"        id="togCompleto" onclick="setProj('completo')">⚡ Proyecto Completo</button>
+  </div>
+
+  <!-- Panel 2: Consumo (oculto en modo Roofing) -->
+  <div class="panel" id="solarPanel">
+    <div class="ptitle"><span class="pnum">2</span> Consumo anual LUMA</div>
+    <div class="kwh-wrap">
+      <label>¿Cuántos kWh consume al año?</label>
+      <input type="number" id="kwhInput" placeholder="Ej: 5,832" min="500" oninput="compute()">
+      <div class="kwh-hint">Promedio Puerto Rico: ~5,800 kWh/año · Se encuentra en la factura LUMA</div>
+    </div>
+    <div id="sysChips" style="display:none">
+      <div class="chips" id="chipsRow"></div>
+      <div id="sysAlerts" style="margin-top:10px"></div>
+    </div>
+  </div>
+
+  <!-- Panel Sellado (visible en Roofing y Proyecto Completo) -->
+  <div class="panel" id="selladoPanel" style="display:none">
+    <div class="ptitle"><span class="pnum">🏠</span> Plan de Sellado de Techo</div>
+    <div class="bats" id="planRow" style="margin-bottom:12px">
+      <div class="plan-btn on" id="planSilver"   onclick="selPlan('silver')" style="display:flex;flex-direction:column;align-items:center;justify-content:center">
+        <div class="pv">Silver</div><div class="ps">$7.25/sq ft</div>
+      </div>
+      <div class="plan-btn" id="planGold"     onclick="selPlan('gold')" style="display:flex;flex-direction:column;align-items:center;justify-content:center">
+        <div class="pv">Gold</div><div class="ps">$8.00/sq ft</div>
+      </div>
+      <div class="plan-btn" id="planPlatinum" onclick="selPlan('platinum')" style="display:flex;flex-direction:column;align-items:center;justify-content:center">
+        <div class="pv">Platinum</div><div class="ps">$9.50/sq ft</div>
+      </div>
+    </div>
+    <div class="field" style="max-width:260px">
+      <label>Área del techo (sq ft)</label>
+      <input type="number" id="sqftInput" placeholder="Ej: 1,800" min="100" oninput="compute()">
+    </div>
+    <div id="selladoInfo" style="margin-top:10px;font-size:13px;color:var(--muted);font-weight:500"></div>
+    <div id="selladoAlerts" style="margin-top:8px"></div>
+  </div>
+
+  <!-- Panel 3: Baterías -->
+  <div class="panel" id="batPanel" style="display:none">
+    <div class="ptitle"><span class="pnum">3</span> Tesla Powerwall — Baterías</div>
+    <div class="bats" id="batRow"></div>
+    <div id="batInfo" style="font-size:13px;color:var(--muted);margin-top:10px;font-weight:500"></div>
+  </div>
+
+  <!-- Sección de resultados -->
+  <div id="results">
+
+    <!-- LUMA Proyección -->
+    <div class="luma-bar">
+      <div style="font-size:11px;font-weight:700;color:#B45309;text-transform:uppercase;letter-spacing:.6px">⚡ Proyección LUMA (4% aumento anual)</div>
+      <div class="lg" id="lumaStats"></div>
+    </div>
+
+    <!-- Panel 4: Opciones de Financiamiento Solar -->
+    <div class="panel" id="solarFinPanel">
+      <div class="ptitle"><span class="pnum">4</span> Opciones de Financiamiento</div>
+
+      <!-- Oriental -->
+      <div class="sec-fin"><span class="fin-badge fb-oriental">ORIENTAL FINANCIAL</span></div>
+      <div id="oAlerts"></div>
+      <div class="fin-grid" id="oCards"></div>
+
+      <!-- WH Financial Solar -->
+      <div class="sec-fin" style="margin-top:16px"><span class="fin-badge fb-wh">WH FINANCIAL</span></div>
+      <div id="whAlerts"></div>
+      <div class="fin-grid" id="whCards"></div>
+
+      <!-- Enfin -->
+      <div class="sec-fin" id="enfinSec" style="margin-top:16px"><span class="fin-badge fb-enfin">ENFIN — PPA &amp; LEASE</span></div>
+      <div id="enfinBody"></div>
+    </div>
+
+    <!-- Panel Roofing Solo (WH Financial Roofing) -->
+    <div class="panel" id="roofingFinPanel" style="display:none">
+      <div class="ptitle"><span class="pnum">4</span> WH Financial — Roofing</div>
+      <div id="roofingCards"></div>
+    </div>
+
+    <!-- Panel 5: Gráfica comparativa -->
+    <div class="panel" id="chartPanel">
+      <div class="ptitle"><span class="pnum">5</span> Comparativa a 25 años</div>
+      <div style="position:relative;height:380px">
+        <canvas id="mainChart"></canvas>
+      </div>
+      <div id="chartLeg" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;font-size:13px;color:var(--muted)"></div>
+    </div>
+
+    <!-- Acciones -->
+    <div class="acts" id="actBtns">
+      <button class="btn bgreen" onclick="saveLead()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Guardar lead
+      </button>
+      <button class="btn bblue" id="dlBtn" onclick="downloadImg()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Descargar imagen
+      </button>
+    </div>
+
+  </div><!-- /results -->
+
+  <!-- Backlog -->
+  <div class="panel">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <button class="btog" onclick="togBL()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Cotizaciones guardadas
+        <span style="background:var(--blue);color:white;font-size:10px;padding:1px 7px;border-radius:20px;font-weight:700" id="blCount">0</span>
+        <svg id="blarr" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <button class="btn bline" style="font-size:11px;padding:6px 12px" onclick="exportCSV()">Exportar CSV</button>
+    </div>
+    <div id="blBody" style="display:none"></div>
+  </div>
+
+  <div class="fwm">
+    Windmar Home · Cotizador Solar · Roberto C. Rivera · 787-510-4504<br>
+    Precios de referencia (Tabla Jul 2025). Usar WindMar Pro/Quote para cotización final oficial.
+  </div>
+
+</div><!-- /container -->
+
+<script>
+// =================== TABLAS DE PRECIOS ===================
+// Precio base sistema solar por # de paneles (410W)
+const SP={
+  8:10496,9:11808,10:13120,11:14432,12:15744,13:15457,
+  14:16646,15:17835,16:19024,17:20213,18:21402,19:22591,
+  20:23780,21:24969,22:26158,23:27347,24:28536,25:29725,
+  26:30914,27:32103,28:33292,29:34481,30:35670,31:36859,
+  32:38048,33:39237,34:40426,35:41615,36:42804,37:43993,
+  38:45182,39:46371,40:47560,41:48749,42:49938,43:51127,
+  44:52316,45:53505,46:54694,47:55883,48:57072,49:58261,
+  50:59450
+};
+
+// Producción diaria estimada (kWh) por # de paneles
+const DE={
+  8:14,9:15,10:17,11:19,12:21,13:22,14:24,15:26,
+  16:28,17:29,18:31,19:33,20:34,21:36,22:38,23:40,
+  24:41,25:43,26:45,27:47,28:49,29:51,30:52,31:54,
+  32:56,33:58,34:59,35:61,36:63,37:64,38:66,39:68,
+  40:70,41:71,42:73,43:75,44:77,45:78,46:80,47:82,
+  48:84,49:85,50:87
+};
+
+// Tesla Powerwall pricing
+const TP={0:0,1:13900,2:26400,3:38900,4:51400};
+
+// Oriental payment matrix (paneles × tasa)
+const OPM={
+  8: {a:111,b:114,c:119,d:86, e:93, f:97, g:78, h:88, i:74, j:84},
+  9: {a:125,b:128,c:134,d:96, e:104,f:109,g:88, h:99, i:83, j:95},
+  10:{a:139,b:142,c:149,d:107,e:116,f:122,g:98, h:110,i:93, j:106},
+  11:{a:153,b:157,c:164,d:118,e:127,f:134,g:108,h:121,i:102,j:116},
+  12:{a:167,b:171,c:179,d:129,e:139,f:146,g:117,h:132,i:111,j:127},
+  13:{a:164,b:168,c:175,d:126,e:136,f:143,g:115,h:129,i:109,j:124},
+  14:{a:176,b:181,c:189,d:136,e:147,f:154,g:124,h:139,i:118,j:134},
+  15:{a:189,b:193,c:202,d:146,e:157,f:165,g:133,h:149,i:126,j:143},
+  16:{a:202,b:206,c:216,d:155,e:168,f:176,g:142,h:159,i:134,j:153},
+  17:{a:214,b:219,c:229,d:165,e:178,f:187,g:151,h:169,i:143,j:163},
+  18:{a:227,b:232,c:243,d:175,e:189,f:198,g:159,h:179,i:151,j:172},
+  19:{a:240,b:245,c:256,d:184,e:199,f:209,g:168,h:189,i:160,j:182},
+  20:{a:252,b:258,c:270,d:194,e:210,f:220,g:177,h:199,i:168,j:191},
+  21:{a:265,b:271,c:283,d:204,e:220,f:231,g:186,h:209,i:176,j:201},
+  22:{a:277,b:284,c:297,d:214,e:231,f:242,g:195,h:219,i:185,j:210},
+  23:{a:290,b:297,c:310,d:223,e:241,f:253,g:204,h:229,i:193,j:220},
+  24:{a:303,b:310,c:324,d:233,e:252,f:264,g:213,h:239,i:202,j:230},
+  25:{a:315,b:322,c:337,d:243,e:262,f:275,g:221,h:248,i:210,j:239},
+  26:{a:328,b:335,c:351,d:252,e:273,f:286,g:230,h:258,i:218,j:249},
+  27:{a:340,b:348,c:364,d:262,e:283,f:297,g:239,h:268,i:227,j:258},
+  28:{a:353,b:361,c:378,d:272,e:293,f:308,g:248,h:278,i:235,j:268},
+  29:{a:366,b:374,c:391,d:282,e:304,f:319,g:257,h:288,i:243,j:277},
+  30:{a:378,b:387,c:405,d:291,e:314,f:330,g:266,h:298,i:252,j:287},
+  31:{a:391,b:400,c:418,d:301,e:325,f:341,g:275,h:308,i:260,j:297},
+  32:{a:403,b:413,c:432,d:311,e:335,f:352,g:283,h:318,i:269,j:306},
+  33:{a:416,b:426,c:445,d:320,e:346,f:364,g:292,h:328,i:277,j:316},
+  34:{a:429,b:439,c:459,d:330,e:356,f:375,g:301,h:338,i:285,j:325},
+  35:{a:441,b:451,c:472,d:340,e:367,f:386,g:310,h:348,i:294,j:335},
+  36:{a:454,b:464,c:486,d:350,e:377,f:397,g:319,h:358,i:302,j:344},
+  37:{a:466,b:477,c:499,d:359,e:388,f:408,g:328,h:368,i:311,j:354},
+  38:{a:479,b:490,c:513,d:369,e:398,f:419,g:337,h:378,i:319,j:364},
+  39:{a:492,b:503,c:526,d:379,e:409,f:430,g:345,h:388,i:327,j:373},
+  40:{a:504,b:516,c:540,d:388,e:419,f:441,g:354,h:398,i:336,j:383},
+  41:{a:517,b:529,c:553,d:398,e:430,f:452,g:363,h:407,i:344,j:392},
+  42:{a:529,b:542,c:567,d:408,e:440,f:463,g:372,h:417,i:353,j:402},
+  43:{a:542,b:555,c:580,d:417,e:451,f:474,g:381,h:427,i:361,j:411},
+  44:{a:555,b:568,c:594,d:427,e:461,f:485,g:390,h:437,i:369,j:421},
+  45:{a:567,b:580,c:607,d:437,e:472,f:496,g:399,h:447,i:378,j:430},
+  46:{a:580,b:593,c:621,d:447,e:482,f:507,g:407,h:457,i:386,j:440},
+  47:{a:592,b:606,c:634,d:456,e:493,f:518,g:416,h:467,i:395,j:450},
+  48:{a:605,b:619,c:648,d:466,e:503,f:529,g:425,h:477,i:403,j:459},
+  49:{a:618,b:632,c:661,d:476,e:514,f:540,g:434,h:487,i:411,j:469},
+  50:{a:630,b:645,c:675,d:485,e:524,f:551,g:443,h:497,i:420,j:478}
+};
+
+// Tesla add-on monthly payments
+const TPM={
+  1:{a:147,b:151,c:158,d:114,e:123,f:129,g:104,h:116,i:98,j:112},
+  2:{a:280,b:286,c:300,d:216,e:233,f:245,g:197,h:221,i:186,j:212},
+  3:{a:412,b:422,c:442,d:318,e:343,f:360,g:290,h:325,i:275,j:313},
+  4:{a:545,b:558,c:583,d:420,e:453,f:476,g:383,h:430,i:363,j:414}
+};
+
+// Enfin table (Tesla included)
+const EP={
+  10:{fi:175,es:139,t:1},11:{fi:191,es:151,t:1},12:{fi:206,es:163,t:1},
+  13:{fi:221,es:174,t:1},14:{fi:235,es:186,t:1},15:{fi:249,es:197,t:1},
+  16:{fi:262,es:207,t:1},17:{fi:275,es:218,t:1},18:{fi:288,es:228,t:1},
+  19:{fi:300,es:237,t:1},20:{fi:312,es:247,t:1},21:{fi:324,es:256,t:1},
+  22:{fi:335,es:265,t:2},23:{fi:346,es:273,t:2},24:{fi:356,es:282,t:2},
+  25:{fi:365,es:288,t:2},26:{fi:377,es:298,t:2},27:{fi:389,es:307,t:2},
+  28:{fi:400,es:316,t:2},29:{fi:411,es:325,t:2},30:{fi:422,es:333,t:2},
+  31:{fi:432,es:341,t:2},32:{fi:442,es:349,t:2},33:{fi:451,es:357,t:2},
+  34:{fi:460,es:364,t:2},35:{fi:469,es:371,t:2},36:{fi:477,es:377,t:2},
+  37:{fi:485,es:383,t:2},38:{fi:499,es:395,t:2}
+};
+
+// Tasas nominales anuales de Oriental por clave (para cálculo de roofing add-on)
+const ORIENTAL_RATES={
+  a:0.0499,b:0.0549,c:0.0649,
+  d:0.0549,e:0.0669,f:0.0749,
+  g:0.0649,h:0.0799,
+  i:0.0699,j:0.0849
+};
+
+// WH Financial — términos solar (tasas EA)
+const WH_TERMS=[
+  {key:'wh10',label:'10 años',yrs:10,rate:0.0699,color:'#C05621'},
+  {key:'wh15',label:'15 años',yrs:15,rate:0.0799,color:'#B7791F'},
+  {key:'wh20',label:'20 años',yrs:20,rate:0.0899,color:'#2C7A7B'},
+  {key:'wh25',label:'25 años',yrs:25,rate:0.0999,color:'#276749'}
+];
+
+// Planes de sellado (precio por sq ft)
+const PLAN_PRICE={silver:7.25,gold:8.00,platinum:9.50};
+
+// WH Financial Roofing — pago mensual base por 1,000 sq ft
+// (de tablas oficiales PDF; tablas son lineales)
+const WH_ROOF_BASE={
+  silver:  {yr7:126, yr10:107},
+  gold:    {yr7:139, yr10:118},
+  platinum:{yr7:165, yr10:140}
+};
+
+// Términos de financiamiento Oriental
+const TERMS=[
+  {key:'t10',label:'10 años',yrs:10,rates:[{k:'a',r:'4.99%'},{k:'b',r:'5.49%'},{k:'c',r:'6.49%'}],color:'#378ADD'},
+  {key:'t15',label:'15 años',yrs:15,rates:[{k:'d',r:'5.49%'},{k:'e',r:'6.69%'},{k:'f',r:'7.49%'}],color:'#3B6D11'},
+  {key:'t20',label:'20 años',yrs:20,needsBat:true,rates:[{k:'g',r:'6.49%'},{k:'h',r:'7.99%'}],color:'#7F77DD'},
+  {key:'t25',label:'25 años',yrs:25,needsBat:true,rates:[{k:'i',r:'6.99%'},{k:'j',r:'8.49%'}],color:'#1D9E75'}
+];
+
+// =================== ESTADO ===================
+let ST={
+  kwh:0,panels:0,panelsDisplay:0,bats:0,
+  rates:{t10:'a',t15:'d',t20:'g',t25:'i'},
+  chart:null,leads:[],upgrade22:false,
+  proyecto:'solar',   // 'solar' | 'roofing' | 'completo'
+  roofPlan:'silver',  // 'silver' | 'gold' | 'platinum'
+  sqft:0
+};
+
+// =================== HELPERS ===================
+const fmt=n=>'$'+Math.round(n).toLocaleString('en-US');
+const fmtD=n=>'$'+parseFloat(n).toFixed(2);
+const gv=id=>parseFloat(document.getElementById(id).value)||0;
+const gs=id=>document.getElementById(id).value.trim();
+
+function calcPanels(kwh){return Math.ceil(kwh/1533/0.410)}
+function kw(p){return((p*410)/1000).toFixed(2)}
+function totalPrice(p,b){return(SP[p]||0)+TP[b]}
+function oMonthly(p,b,rk){
+  const s=(OPM[p]||{})[rk]||0;
+  const bt=b>0?((TPM[b]||{})[rk]||0):0;
+  return s+bt;
+}
+function termOK(term,p,b){
+  if(term.needsBat&&b===0)return false;
+  if(p<=11&&b===0&&(term.key==='t20'||term.key==='t25'))return false;
+  const tot=totalPrice(p,b);
+  // <$15k: Oriental solo financia a 10 años
+  if(tot<15000&&term.key!=='t10')return false;
+  // ≥$15k sin batería: máximo 15 años (t20/t25 ya bloqueados por needsBat)
+  return !!(OPM[p]);
+}
+
+// =================== WH FINANCIAL HELPERS ===================
+function eaToMonthly(ea){return Math.pow(1+ea,1/12)-1}
+function amortize(principal,ea,yrs){
+  const r=eaToMonthly(ea),n=yrs*12;
+  return Math.round(principal*(r*Math.pow(1+r,n))/(Math.pow(1+r,n)-1));
+}
+function roofCost(sqft,plan){return sqft*(PLAN_PRICE[plan]||7.25)}
+function whRoofMonthly(sqft,plan,termYrs){
+  const base=WH_ROOF_BASE[plan]||WH_ROOF_BASE.silver;
+  const r=termYrs===7?base.yr7:base.yr10;
+  return Math.round(sqft/1000*r);
+}
+function orientalRoofMonthly(sqft,plan,rk,yrs){
+  const cost=roofCost(sqft,plan);
+  return orientalAmortize(cost,rk,yrs);
+}
+function orientalAmortize(principal,rk,yrs){
+  const r=(ORIENTAL_RATES[rk]||0.0549)/12;
+  const n=yrs*12;
+  return Math.round(principal*(r*Math.pow(1+r,n))/(Math.pow(1+r,n)-1));
+}
+function roofLimitOK(solarCost,roofingCost,hasBats,financier){
+  const total=solarCost+roofingCost;
+  if(!total)return{ok:true,pct:0,limit:50};
+  const pct=Math.round(roofingCost/total*100);
+  const limit=(financier==='oriental'&&hasBats)?30:50;
+  return{ok:pct<=limit,pct,limit};
+}
+
+// =================== PROYECTO TOGGLE ===================
+function setProj(mode){
+  ST.proyecto=mode;
+  ['solar','roofing','completo'].forEach(m=>{
+    document.getElementById('tog'+m.charAt(0).toUpperCase()+m.slice(1))
+      .classList.toggle('active',m===mode);
+  });
+  // Mostrar/ocultar paneles según modo
+  const isSolar=mode==='solar',isRoof=mode==='roofing',isComp=mode==='completo';
+  document.getElementById('solarPanel').style.display=isRoof?'none':'block';
+  document.getElementById('selladoPanel').style.display=isRoof||isComp?'block':'none';
+  // Resetear resultados al cambiar modo
+  const r=document.getElementById('results');
+  r.style.display='none';r.classList.remove('visible');
+  document.getElementById('batPanel').style.display='none';
+  document.getElementById('sysChips').style.display='none';
+  document.getElementById('kwhInput').value='';
+  document.getElementById('sqftInput').value='';
+  ST.kwh=0;ST.panels=0;ST.sqft=0;
+}
+
+function selPlan(plan){
+  ST.roofPlan=plan;
+  ['silver','gold','platinum'].forEach(p=>{
+    document.getElementById('plan'+p.charAt(0).toUpperCase()+p.slice(1))
+      .classList.toggle('on',p===plan);
+  });
+  compute();
+}
+
+// =================== HEADER DINÁMICO ===================
+function updateHeader(){
+  const con=gs('conName');
+  const tel=gs('conPhone');
+  const el=document.getElementById('headerConsultor');
+  if(con||tel) el.innerHTML=(con||'Consultor')+'<br>'+(tel||'787-000-0000');
+}
+
+// =================== COMPUTE PRINCIPAL ===================
+function compute(){
+  const mode=ST.proyecto;
+
+  // Modo Solo Roofing
+  if(mode==='roofing'){
+    const sqft=gv('sqftInput');
+    ST.sqft=sqft;
+    if(sqft<100){
+      document.getElementById('results').style.display='none';
+      document.getElementById('results').classList.remove('visible');
+      document.getElementById('selladoInfo').textContent='';
+      return;
+    }
+    const cost=roofCost(sqft,ST.roofPlan);
+    document.getElementById('selladoInfo').innerHTML=
+      `<strong>${sqft.toLocaleString()} sq ft · ${ST.roofPlan.charAt(0).toUpperCase()+ST.roofPlan.slice(1)}</strong> = ${fmt(cost)}`;
+    renderRoofingResults();
+    return;
+  }
+
+  // Modos Solar y Proyecto Completo
+  const kwh=gv('kwhInput');
+  ST.kwh=kwh;
+  const sqft=mode==='completo'?gv('sqftInput'):0;
+  ST.sqft=sqft;
+
+  if(kwh<500){
+    document.getElementById('sysChips').style.display='none';
+    document.getElementById('batPanel').style.display='none';
+    const r=document.getElementById('results');
+    r.style.display='none';r.classList.remove('visible');
+    return;
+  }
+
+  const p=calcPanels(kwh);
+  ST.panels=p;
+  if(!ST.upgrade22)ST.panelsDisplay=p;
+  renderSysInfo(p,kwh);
+  if(ST.upgrade22&&p!==20&&p!==21){ST.upgrade22=false;}
+  ST.panelsDisplay=ST.upgrade22?22:p;
+  document.getElementById('batPanel').style.display='block';
+  renderBats(ST.panelsDisplay);
+  renderUpgradeOption(p);
+
+  // Sellado info en modo Completo
+  if(mode==='completo'&&sqft>=100){
+    const cost=roofCost(sqft,ST.roofPlan);
+    document.getElementById('selladoInfo').innerHTML=
+      `<strong>${sqft.toLocaleString()} sq ft · ${ST.roofPlan.charAt(0).toUpperCase()+ST.roofPlan.slice(1)}</strong> = ${fmt(cost)}`;
+  } else if(mode==='completo'){
+    document.getElementById('selladoInfo').textContent='Ingresa el área del techo para ver el Proyecto Completo.';
+  }
+
+  renderResults();
+}
+
+function renderUpgradeOption(calcP){
+  let existing=document.getElementById('upgradeBox');
+  if(existing)existing.remove();
+  if(calcP!==20&&calcP!==21)return;
+  const box=document.createElement('div');
+  box.id='upgradeBox';
+  box.className='panel';
+  box.style.cssText='border:1.5px solid var(--orange);margin-bottom:14px;';
+  const isOn=ST.upgrade22;
+  box.innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div>
+        <div style="font-size:13px;font-weight:600;color:var(--orange)">Opción de mejora disponible</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:3px">
+          El sistema calculado es de ${calcP} paneles. Puedes ofrecerle al cliente subir a
+          <strong>22 paneles + 2 baterías Tesla</strong> para mayor cobertura energética.
+        </div>
+      </div>
+      <button onclick="toggleUpgrade22(${calcP})" class="btn ${isOn?'bblue':'bline'}" style="white-space:nowrap;flex-shrink:0">
+        ${isOn?'✓ Mostrando 22 paneles + 2 Tesla':'Ver opción 22 paneles + 2 Tesla'}
+      </button>
+    </div>
+    ${isOn?`<div style="margin-top:10px;font-size:11px;color:var(--muted);background:var(--bg);border-radius:8px;padding:8px 12px">
+      Mostrando precios para 22 paneles con 2 baterías Tesla. Click de nuevo para volver a ${calcP} paneles.
+    </div>`:''}
+  `;
+  const batPanel=document.getElementById('batPanel');
+  batPanel.parentNode.insertBefore(box,batPanel.nextSibling);
+}
+
+function toggleUpgrade22(calcP){
+  ST.upgrade22=!ST.upgrade22;
+  ST.panelsDisplay=ST.upgrade22?22:calcP;
+  if(ST.upgrade22){ST.bats=2;}
+  renderBats(ST.panelsDisplay);
+  renderUpgradeOption(calcP);
+  renderResults();
+}
+
+function renderSysInfo(p,kwh){
+  document.getElementById('sysChips').style.display='block';
+  const price=SP[p];
+  const daily=DE[p]||(Math.round(p*410*1533/365/1000));
+  let chips=`
+    <div class="chip"><div class="chip-v">${p}</div><div class="chip-l">Paneles (410W c/u)</div></div>
+    <div class="chip"><div class="chip-v">${kw(p)} kW</div><div class="chip-l">Capacidad instalada</div></div>
+    <div class="chip"><div class="chip-v">${daily} kWh</div><div class="chip-l">Producción diaria est.</div></div>
+    ${price?`<div class="chip chip-p"><div class="chip-v">${fmt(price)}</div><div class="chip-l">Precio base s/batería</div></div>`:''}
+  `;
+  document.getElementById('chipsRow').innerHTML=chips;
+  let alerts='';
+  if(p<8)alerts+=`<div class="alert aw">El consumo ingresado calcula ${p} paneles. El mínimo es 8 paneles. Verifica la factura.</div>`;
+  if(p>72)alerts+=`<div class="alert aw">Tamaño máximo residencial: 72 paneles. Este sistema requiere ${p} paneles.</div>`;
+  if(p===10)alerts+=`<div class="alert ai">Sistemas de 10 paneles no aplican para la promoción "Firma y Gana" y llevan comisión reducida -2%.</div>`;
+  if(!SP[p]&&p>=8&&p<=72)alerts+=`<div class="alert aw">Panel ${p} está fuera de tablas estándar. Consulta WindMar Pro para precio exacto.</div>`;
+  document.getElementById('sysAlerts').innerHTML=alerts;
+}
+
+function renderBats(p){
+  let html='';
+  for(let b=0;b<=4;b++){
+    const on=ST.bats===b;
+    const sub=b===0?'Battery Ready':fmt(TP[b]);
+    html+=`<div class="bat ${on?'on':''}" onclick="selBat(${b})">
+      <div class="bv">${b===0?'0':b+'×'}</div>
+      <div class="bs">${b===0?'Battery Ready':'Tesla'}</div>
+      <div class="bs">${sub}</div>
+    </div>`;
+  }
+  document.getElementById('batRow').innerHTML=html;
+  const tot=totalPrice(p,ST.bats);
+  const bi=ST.bats>0
+    ?`Total: <strong>${fmt(tot)}</strong> = sistema ${fmt(SP[p]||0)} + ${ST.bats} batería${ST.bats>1?'s':''} ${fmt(TP[ST.bats])}`
+    :`Total sistema (sin batería): <strong>${fmt(tot)}</strong>`;
+  document.getElementById('batInfo').innerHTML=bi;
+}
+
+function selBat(b){ST.bats=b;renderBats(ST.panels);renderResults()}
+function setRate(tk,rk){ST.rates[tk]=rk;renderResults()}
+
+function renderResults(){
+  const {panelsDisplay:p,bats:b,rates,kwh,proyecto,roofPlan,sqft}=ST;
+  if(!p||p<8||p>72)return;
+
+  const el=document.getElementById('results');
+  if(el.style.display==='none'){
+    el.style.display='block';
+    requestAnimationFrame(()=>el.classList.add('visible'));
+  }
+
+  // Mostrar/ocultar paneles según modo
+  const isComp=proyecto==='completo';
+  document.getElementById('solarFinPanel').style.display='block';
+  document.getElementById('roofingFinPanel').style.display='none';
+  document.getElementById('chartPanel').style.display='block';
+
+  const lumaRate=gv('lumaRate')||0.27;
+  const lm0=(kwh/12)*lumaRate;
+  const lt25=lm0*12*((Math.pow(1.04,25)-1)/0.04);
+  const lm25=lm0*Math.pow(1.04,24);
+  ST.lm0=lm0;ST.lt25=lt25;
+
+  document.getElementById('lumaStats').innerHTML=`
+    <div class="ls"><div class="v">${fmtD(lm0)}</div><div class="l">Factura LUMA hoy/mes</div></div>
+    <div class="ls"><div class="v d">${fmtD(lm25)}</div><div class="l">LUMA proyectado año 25</div></div>
+    <div class="ls"><div class="v d">${fmt(lt25)}</div><div class="l">Total acumulado 25 años</div></div>
+  `;
+
+  let oa='';
+  const tot=totalPrice(p,b);
+  if(tot<15000)oa+=`<div class="alert ai" style="margin-bottom:12px">Proyecto bajo $15,000 (total: ${fmt(tot)}): Oriental solo financia a <strong>10 años</strong>. Agrega una batería para habilitar más términos.</div>`;
+  if(p<=11&&b===0)oa+=`<div class="alert ai" style="margin-bottom:12px">Sistema Battery Ready (8-11 paneles sin batería): solo disponible a 10 o 15 años.</div>`;
+  document.getElementById('oAlerts').innerHTML=oa;
+
+  // Pre-compute Oriental roofing pronto (same for all terms)
+  let oriPronto=0, oriFinancedRoof=0, oriLimitPct=50;
+  if(isComp&&sqft>=100){
+    const rCostChk=roofCost(sqft,roofPlan);
+    const chkOri=roofLimitOK(tot,rCostChk,b>0,'oriental');
+    oriLimitPct=chkOri.limit;
+    if(!chkOri.ok){
+      const lf=chkOri.limit/100;
+      const maxFin=lf/(1-lf)*tot;
+      oriPronto=Math.ceil(rCostChk-maxFin);
+      oriFinancedRoof=rCostChk-oriPronto;
+    } else {
+      oriFinancedRoof=rCostChk;
+    }
+  }
+
+  let cards='';
+  TERMS.forEach(term=>{
+    let avail=termOK(term,p,b);
+    const rk=rates[term.key];
+    const mo=oMonthly(p,b,rk);
+    let pills='<div class="rpills">';
+    term.rates.forEach(r=>{
+      pills+=`<span class="rp ${rk===r.k?'on':''}" onclick="setRate('${term.key}','${r.k}')">${r.r}</span>`;
+    });
+    pills+='</div>';
+    const rCost=isComp&&sqft>=100?roofCost(sqft,roofPlan):0;
+    const roofMo=isComp&&sqft>=100&&avail?orientalAmortize(oriFinancedRoof,rk,term.yrs):0;
+    const totalMo=mo+roofMo;
+    const totalPaid=totalMo*12*term.yrs;
+    const solarPaid=mo*12*term.yrs;
+    const sav25=Math.round(lt25-solarPaid);
+
+    let note='';
+    if(!avail&&term.needsBat&&b===0){
+      note=`<div class="fnote nwarn">Requiere mínimo 1 batería Tesla</div>`;
+    } else if(!avail&&tot<15000){
+      note=`<div class="fnote nwarn">Monto mínimo $15,000 no alcanzado</div>`;
+    } else if(avail&&oriPronto>0&&isComp&&sqft>=100){
+      note=`<div class="fnote nwarn">Pronto de ${fmt(oriPronto)} sobre el sellado para cumplir el ${oriLimitPct}%.</div>`;
+    } else if(avail){
+      note=sav25>0?`<div class="fnote nown">Ahorras ~${fmt(sav25)} en 25 años vs LUMA</div>`:'';
+    }
+
+    let breakdown='';
+    if(isComp&&sqft>=100&&roofMo>0){
+      breakdown=`<div class="fr"><span class="frl">Solar</span><span class="frv">$${mo.toLocaleString()}/mes</span></div>
+        <div class="fr"><span class="frl">Sellado (${roofPlan})${oriPronto>0?' financiado':''}</span><span class="frv">$${roofMo.toLocaleString()}/mes</span></div>
+        <hr class="fd">`;
+    }
+
+    cards+=`<div class="fc ${!avail?'off':''}">
+      ${pills}
+      <div class="ft">${term.label}</div>
+      <div class="fp">$${totalMo.toLocaleString()}<span>/mes</span></div>
+      <hr class="fd">
+      ${breakdown}
+      <div class="fr"><span class="frl">Precio ${isComp&&sqft>=100?'proyecto':'sistema'}</span><span class="frv">${fmt(tot+rCost)}</span></div>
+      ${oriPronto>0&&isComp&&sqft>=100?`<div class="fr"><span class="frl">Pronto requerido</span><span class="frv">${fmt(oriPronto)}</span></div>`:''}
+      <div class="fr"><span class="frl">Total pagado</span><span class="frv">${fmt(totalPaid)}</span></div>
+      ${note}
+    </div>`;
+  });
+  document.getElementById('oCards').innerHTML=cards;
+
+  // ── Alertas de sellado para Oriental (Proyecto Completo) ──
+  if(isComp&&sqft>=100){
+    const rCostA=roofCost(sqft,roofPlan);
+    const chkA=roofLimitOK(tot,rCostA,b>0,'oriental');
+    let sa='';
+    if(!chkA.ok){
+      const lf=chkA.limit/100;
+      const pronto=Math.ceil(rCostA-lf/(1-lf)*tot);
+      sa=`<div class="alert aw" style="margin-top:10px">⚠️ El sellado representa el <strong>${chkA.pct}%</strong> del proyecto.
+        Con Oriental ${b>0?'+ batería':'sin batería'}, el máximo es <strong>${chkA.limit}%</strong>.
+        Para financiar con Oriental, el cliente da un pronto de <strong>${fmt(pronto)}</strong> sobre el sellado.</div>`;
+    }
+    document.getElementById('selladoAlerts').innerHTML=sa;
+  } else {
+    document.getElementById('selladoAlerts').innerHTML='';
+  }
+
+  // ── WH Financial Solar ──
+  renderWHCards(p,b,kwh,isComp,roofPlan,sqft);
+
+  // Enfin
+  const ed=EP[p];
+  let enfinHtml='';
+  if(p<10){
+    enfinHtml=`<div class="alert aw">Enfin requiere mínimo 10 paneles. Este sistema tiene ${p} paneles — solo aplica Oriental.</div>`;
+  } else if(!ed){
+    const bat3=p<=56?'3 Tesla Powerwalls':'4 Tesla Powerwalls';
+    enfinHtml=`<div class="alert ai">Sistemas de ${p} paneles con Enfin incluyen ${bat3}. Pagos exactos: consultar WindMar Pro.</div>`;
+  } else {
+    const tc=ed.t;
+    const fiTotal=ed.fi*12*25;
+    const esTotal=enfinCumul(ed.es,0.0299,25);
+    const fiSav=lt25-fiTotal;
+    const esSav=lt25-esTotal;
+    enfinHtml=`
+      <div class="alert ninfo" style="background:#F5F3FF;color:#6D28D9;border-color:#DDD6FE;margin-bottom:12px">
+        <strong>Incluye ${tc} Tesla Powerwall${tc>1?'s':''}</strong>
+      </div>
+      <div class="esplit">
+        <div class="eopt">
+          <div class="eopt-t">PPA Fijo · 25 años</div>
+          <div class="eopt-p">$${ed.fi}<span>/mes</span></div>
+          <hr class="fd" style="margin:8px 0">
+          <div class="fr"><span class="frl">Total 25 años</span><span class="frv">${fmt(fiTotal)}</span></div>
+        </div>
+        <div class="eopt">
+          <div class="eopt-t">Escalonado +2.99%/año</div>
+          <div class="eopt-p">$${ed.es}<span>/mes inicial</span></div>
+          <hr class="fd" style="margin:8px 0">
+          <div class="fr"><span class="frl">Total 25 años</span><span class="frv">${fmt(esTotal)}</span></div>
+        </div>
+      </div>
+    `;
+  }
+  document.getElementById('enfinBody').innerHTML=enfinHtml;
+
+  renderChart(p,b,rates,kwh,lm0);
+}
+
+function renderWHCards(p,b,kwh,isComp,roofPlan,sqft){
+  const tot=totalPrice(p,b);
+  const rCost=isComp&&sqft>=100?roofCost(sqft,roofPlan):0;
+  const lt25=ST.lt25||0;
+
+  // WH Financial: no minimum (applies to any system 6+ panels)
+  document.getElementById('whAlerts').innerHTML='';
+
+  // Check 50% limit for Proyecto Completo; calculate pronto if exceeded
+  let whPronto=0;
+  let whFinancedRoof=rCost;
+  if(isComp&&sqft>=100){
+    const chk=roofLimitOK(tot,rCost,b>0,'wh');
+    if(!chk.ok){
+      const lf=0.50;
+      const maxFin=lf/(1-lf)*tot;
+      whPronto=Math.ceil(rCost-maxFin);
+      whFinancedRoof=rCost-whPronto;
+    }
+  }
+
+  let cards='';
+  WH_TERMS.forEach(term=>{
+    const principal=isComp&&sqft>=100?tot+whFinancedRoof:tot;
+    const mo=amortize(principal,term.rate,term.yrs);
+    const total=mo*12*term.yrs;
+    const moSolarOnly=amortize(tot,term.rate,term.yrs);
+    const solarPaid=moSolarOnly*12*term.yrs;
+    const sav25=Math.round(lt25-solarPaid);
+
+    let note='';
+    if(whPronto>0){
+      note=`<div class="fnote nwarn">Pronto de ${fmt(whPronto)} sobre el sellado para cumplir el 50%.</div>`;
+    } else {
+      note=sav25>0?`<div class="fnote nown">Ahorras ~${fmt(sav25)} en 25 años vs LUMA</div>`:'';
+    }
+
+    let breakdown='';
+    if(isComp&&sqft>=100){
+      const moRoof=amortize(whFinancedRoof,term.rate,term.yrs);
+      breakdown=`<div class="fr"><span class="frl">Solar</span><span class="frv">$${moSolarOnly.toLocaleString()}/mes</span></div>
+        <div class="fr"><span class="frl">Sellado (${roofPlan})${whPronto>0?' financiado':''}</span><span class="frv">$${moRoof.toLocaleString()}/mes</span></div>
+        <hr class="fd">`;
+    }
+    cards+=`<div class="fc">
+      <div class="ft" style="color:${term.color}">${term.label} · ${(term.rate*100).toFixed(2)}% EA</div>
+      <div class="fp">$${mo.toLocaleString()}<span>/mes</span></div>
+      <hr class="fd">
+      ${breakdown}
+      <div class="fr"><span class="frl">Precio ${isComp&&sqft>=100?'proyecto':'sistema'}</span><span class="frv">${fmt(tot+rCost)}</span></div>
+      ${whPronto>0?`<div class="fr"><span class="frl">Pronto requerido</span><span class="frv">${fmt(whPronto)}</span></div>`:''}
+      <div class="fr"><span class="frl">Total pagado</span><span class="frv">${fmt(total)}</span></div>
+      ${note}
+    </div>`;
+  });
+  document.getElementById('whCards').innerHTML=cards;
+}
+
+function renderRoofingResults(){
+  const {roofPlan,sqft}=ST;
+  if(!sqft||sqft<100){
+    document.getElementById('results').style.display='none';
+    return;
+  }
+  const el=document.getElementById('results');
+  if(el.style.display==='none'){
+    el.style.display='block';
+    requestAnimationFrame(()=>el.classList.add('visible'));
+  }
+  document.getElementById('solarFinPanel').style.display='none';
+  document.getElementById('roofingFinPanel').style.display='block';
+  document.getElementById('chartPanel').style.display='none';
+
+  const cost=roofCost(sqft,roofPlan);
+  const planName=roofPlan.charAt(0).toUpperCase()+roofPlan.slice(1);
+
+  let html=`<div class="alert ai" style="margin-bottom:12px">
+    <strong>${planName} · ${sqft.toLocaleString()} sq ft</strong> — Precio estimado: <strong>${fmt(cost)}</strong>
+  </div>
+  <div class="fin-grid">`;
+
+  // 7 años
+  const mo7=whRoofMonthly(sqft,roofPlan,7);
+  const mo10=whRoofMonthly(sqft,roofPlan,10);
+
+  html+=`<div class="fc">
+    <div class="ft" style="color:#E65100">7 años · 7.99%</div>
+    <div class="fp">$${mo7.toLocaleString()}<span>/mes</span></div>
+    <hr class="fd">
+    <div class="fr"><span class="frl">Precio sellado</span><span class="frv">${fmt(cost)}</span></div>
+    <div class="fr"><span class="frl">Total pagado</span><span class="frv">${fmt(mo7*84)}</span></div>
+  </div>
+  <div class="fc">
+    <div class="ft" style="color:#C05621">10 años · 9.99%</div>
+    <div class="fp">$${mo10.toLocaleString()}<span>/mes</span></div>
+    <hr class="fd">
+    <div class="fr"><span class="frl">Precio sellado</span><span class="frv">${fmt(cost)}</span></div>
+    <div class="fr"><span class="frl">Total pagado</span><span class="frv">${fmt(mo10*120)}</span></div>
+  </div>`;
+
+  html+='</div>';
+  html+=`<div class="alert ai" style="margin-top:12px;font-size:11px">
+    WH Financial · Solo Roofing. Para Solar+Roofing en un solo préstamo selecciona "Proyecto Completo".
+  </div>`;
+  document.getElementById('roofingCards').innerHTML=html;
+}
+
+function enfinCumul(start,esc,yrs){
+  let t=0;
+  for(let y=1;y<=yrs;y++)t+=start*Math.pow(1+esc,y-1)*12;
+  return Math.round(t);
+}
+
+function renderChart(p,b,rates,kwh,lm0){
+  const yrs=Array.from({length:25},(_,i)=>i+1);
+  let cumL=0;
+  const lumaD=yrs.map(y=>{cumL+=lm0*Math.pow(1.04,y-1)*12;return Math.round(cumL)});
+  const lines=[{label:'LUMA (sin solar)',d:lumaD,c:'#E24B4A',w:2.5,dash:[6,3]}];
+  TERMS.forEach(term=>{
+    const rk=rates[term.key];
+    const mo=oMonthly(p,b,rk);
+    let cum=0;
+    const d=yrs.map(y=>{cum+=y<=term.yrs?mo*12:0;return Math.round(cum)});
+    lines.push({label:`Oriental ${term.label}`,d,c:term.color,w:term.rec?3:1.5,dash:[]});
+  });
+  const ed=EP[p];
+  if(ed){
+    let cF=0,cE=0;
+    const dF=yrs.map(()=>{cF+=ed.fi*12;return Math.round(cF)});
+    const dE=yrs.map(y=>{cE+=ed.es*Math.pow(1.0299,y-1)*12;return Math.round(cE)});
+    lines.push({label:'Enfin Fijo',d:dF,c:'#BA7517',w:1.5,dash:[3,3]});
+    lines.push({label:'Enfin Escalonado',d:dE,c:'#D4537E',w:1.5,dash:[2,4]});
+  }
+
+  // WH Financial lines
+  const isComp=ST.proyecto==='completo';
+  const rCost=isComp&&ST.sqft>=100?roofCost(ST.sqft,ST.roofPlan):0;
+  const principal=totalPrice(p,b)+rCost;
+  WH_TERMS.forEach(term=>{
+    const mo=amortize(principal,term.rate,term.yrs);
+    let cum=0;
+    const d=yrs.map(y=>{cum+=y<=term.yrs?mo*12:0;return Math.round(cum)});
+    lines.push({label:`WH ${term.label}`,d,c:term.color,w:1.5,dash:[4,2]});
+  });
+  const datasets=lines.map(l=>({
+    label:l.label,data:l.d,borderColor:l.c,borderWidth:l.w,
+    borderDash:l.dash,pointRadius:0,tension:0.3,fill:false
+  }));
+  if(ST.chart)ST.chart.destroy();
+  ST.chart=new Chart(document.getElementById('mainChart').getContext('2d'),{
+    type:'line',
+    data:{labels:yrs.map(y=>`Año ${y}`),datasets},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fmt(c.parsed.y)}`}}
+      },
+      scales:{
+        x:{ticks:{autoSkip:true,maxTicksLimit:8,font:{size:11},color:'#888'},grid:{color:'rgba(0,0,0,0.05)'}},
+        y:{ticks:{callback:v=>'$'+(v/1000).toFixed(0)+'k',font:{size:11},color:'#888'},grid:{color:'rgba(0,0,0,0.05)'}}
+      }
+    }
+  });
+  const leg=document.getElementById('chartLeg');
+  leg.innerHTML='';
+  lines.forEach(l=>{
+    const s=document.createElement('span');
+    s.style.cssText='display:flex;align-items:center;gap:5px';
+    s.innerHTML=`<span style="display:inline-block;width:20px;height:3px;border-radius:2px;background:${l.c}"></span>${l.label}`;
+    leg.appendChild(s);
+  });
+}
+
+// =================== BACKLOG ===================
+function loadLeads(){
+  try{ST.leads=JSON.parse(localStorage.getItem('wm_leads')||'[]')}
+  catch{ST.leads=[]}
+  document.getElementById('blCount').textContent=ST.leads.length;
+}
+
+function saveLead(){
+  if(ST.proyecto!=='roofing'&&!ST.panels)return alert('Primero ingresa el consumo anual.');
+  if(ST.proyecto==='roofing'&&!ST.sqft)return alert('Primero ingresa el área del techo.');
+  const name=gs('cName');
+  if(!name)return alert('Ingresa el nombre del cliente antes de guardar.');
+  const mo15=ST.proyecto!=='roofing'?oMonthly(ST.panels,ST.bats,ST.rates.t15):0;
+  const lead={
+    fecha:new Date().toLocaleDateString('es-PR'),
+    cliente:name,email:gs('cEmail'),tel:gs('cPhone'),
+    consultor:gs('conName'),tel_c:gs('conPhone'),
+    proyecto:ST.proyecto,
+    kwh:ST.kwh,paneles:ST.panels,kw:ST.panels?kw(ST.panels):'—',baterias:ST.bats,
+    precio:ST.proyecto!=='roofing'?totalPrice(ST.panels,ST.bats):0,
+    sellado_plan:ST.roofPlan,sellado_sqft:ST.sqft,
+    sellado_precio:ST.sqft?roofCost(ST.sqft,ST.roofPlan):0,
+    mensual_15:mo15,luma:fmtD(ST.lm0||0)
+  };
+  ST.leads.push(lead);
+  localStorage.setItem('wm_leads',JSON.stringify(ST.leads));
+  document.getElementById('blCount').textContent=ST.leads.length;
+  if(blOpen)renderBL();
+  alert('Lead guardado: '+name);
+}
+
+function exportCSV(){
+  if(!ST.leads.length)return alert('No hay leads guardados.');
+  const h=['Fecha','Cliente','Email','Teléfono','Consultor','Tel Consultor','kWh/año','Paneles','kW','Baterías','Precio Sistema','Mensual 15yr 5.49%','LUMA Hoy'];
+  const rows=ST.leads.map(l=>[l.fecha,l.cliente,l.email,l.tel,l.consultor,l.tel_c,l.kwh,l.paneles,l.kw,l.baterias,l.precio,l.mensual_15,l.luma]);
+  const csv=[h,...rows].map(r=>r.map(v=>`"${v||''}"`).join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`windmar_leads_${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();URL.revokeObjectURL(url);
+}
+
+let blOpen=false;
+function togBL(){
+  blOpen=!blOpen;
+  document.getElementById('blBody').style.display=blOpen?'block':'none';
+  const a=document.getElementById('blarr');
+  a.innerHTML=blOpen?'<polyline points="18 15 12 9 6 15" stroke="currentColor" stroke-width="2.5" fill="none"/>':'<polyline points="6 9 12 15 18 9" stroke="currentColor" stroke-width="2.5" fill="none"/>';
+  if(blOpen)renderBL();
+}
+
+function renderBL(){
+  const el=document.getElementById('blBody');
+  if(!ST.leads.length){el.innerHTML='<div class="empty">No hay leads guardados aún.</div>';return;}
+  let h='<div style="overflow-x:auto"><table class="bltbl"><thead><tr><th>Fecha</th><th>Cliente</th><th>Tel</th><th>kWh</th><th>Paneles / kW</th><th>Baterías</th><th>Precio</th><th>Mensual 15yr</th><th>Consultor</th></tr></thead><tbody>';
+  ST.leads.forEach(l=>{
+    h+=`<tr>
+      <td>${l.fecha}</td>
+      <td><strong>${l.cliente}</strong>${l.email?'<br><small style="color:#94A3B8">'+l.email+'</small>':''}</td>
+      <td>${l.tel||'—'}</td>
+      <td>${(l.kwh||0).toLocaleString()}</td>
+      <td>${l.paneles} · ${l.kw} kW</td>
+      <td>${l.baterias===0?'Battery Ready':l.baterias+' Tesla'}</td>
+      <td>${fmt(l.precio)}</td>
+      <td><strong>$${l.mensual_15}/mes</strong></td>
+      <td>${l.consultor||'—'}</td>
+    </tr>`;
+  });
+  h+='</tbody></table></div>';
+  el.innerHTML=h;
+}
+
+// =================== DESCARGAR IMAGEN ===================
+function downloadImg(){
+  if(typeof html2canvas==='undefined'){alert('Error cargando librería de imagen.');return}
+  const btn=document.getElementById('dlBtn');
+  const btns=document.getElementById('actBtns');
+  btn.disabled=true;
+  btn.innerHTML=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Generando...`;
+  btns.style.display='none';
+  const cname=gs('cName')||'cotizacion';
+  html2canvas(document.querySelector('.container'),{
+    backgroundColor:'#EEF2F7',scale:2,useCORS:true,logging:false
+  }).then(canvas=>{
+    btns.style.display='flex';
+    btn.disabled=false;
+    btn.innerHTML=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> ✓ Descargado`;
+    setTimeout(()=>{
+      btn.innerHTML=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Descargar imagen`;
+    },2500);
+    canvas.toBlob(blob=>{
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=url;
+      a.download=`windmar_${cname.replace(/\s+/g,'_')}_${new Date().toISOString().split('T')[0]}.png`;
+      a.click();URL.revokeObjectURL(url);
+    },'image/png');
+  }).catch(e=>{
+    btns.style.display='flex';
+    btn.disabled=false;
+    btn.innerHTML='Descargar imagen';
+    alert('Error: '+e.message);
+  });
+}
+
+// =================== INIT ===================
+loadLeads();
+</script>
+</body>
+</html>

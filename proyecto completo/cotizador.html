@@ -1,0 +1,1951 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Windmar Home · Cotizador Solar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+/* ═══════════════════════════════════════════════════
+   RESET & TOKENS
+═══════════════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  /* Brand */
+  --blue:#1B4B8A;--bd:#0D2E5C;--blue-mid:#2560A8;
+  --orange:#F7941D;--orange-dk:#D97706;
+  --green:#16A34A;--green-dk:#15803D;
+  --red:#DC2626;--purple:#6D28D9;
+
+  /* Surface */
+  --bg:#EDF1F7;
+  --surface:#FFFFFF;
+  --surface-2:#F8FAFD;
+  --glass:rgba(255,255,255,0.72);
+
+  /* Text */
+  --text:#0F1B2D;--text-2:#3D5066;--muted:#64748B;
+
+  /* Border & Shadow */
+  --border:#DDE4EE;--border-2:#C8D3E2;
+  --shadow-sm:0 1px 3px rgba(15,27,45,.06),0 1px 2px rgba(15,27,45,.04);
+  --shadow-md:0 4px 16px rgba(15,27,45,.08),0 2px 6px rgba(15,27,45,.05);
+  --shadow-lg:0 12px 40px rgba(15,27,45,.12),0 4px 14px rgba(15,27,45,.07);
+  --shadow-card:0 2px 8px rgba(15,27,45,.06),0 0 1px rgba(15,27,45,.08);
+
+  /* Radius */
+  --r-sm:8px;--r-md:14px;--r-lg:20px;--r-xl:28px;
+
+  /* Transitions */
+  --ease:.22s cubic-bezier(.4,0,.2,1);
+  --ease-spring:.35s cubic-bezier(.34,1.56,.64,1);
+}
+
+body{
+  font-family:'Inter',system-ui,-apple-system,sans-serif;
+  background:var(--bg);color:var(--text);min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ═══════════════════════════════════════════════════
+   HEADER
+═══════════════════════════════════════════════════ */
+header{
+  background:linear-gradient(135deg,var(--bd) 0%,#1B4B8A 55%,#0E5C34 100%);
+  padding:0 20px;color:white;
+  position:sticky;top:0;z-index:200;
+  box-shadow:0 2px 20px rgba(0,0,0,.3);
+  backdrop-filter:blur(10px);
+}
+.h-inner{
+  max-width:1080px;margin:0 auto;
+  display:flex;align-items:center;gap:16px;justify-content:space-between;
+  height:64px;
+}
+.h-left{display:flex;align-items:center;gap:14px}
+.h-logo{height:44px;width:auto;display:block;filter:drop-shadow(0 1px 4px rgba(0,0,0,.3))}
+.h-divider{width:1px;height:32px;background:rgba(255,255,255,.2);flex-shrink:0}
+.h-title{font-size:17px;font-weight:800;letter-spacing:-.3px;line-height:1.15}
+.h-sub{font-size:10.5px;opacity:.65;margin-top:2px;font-weight:500;letter-spacing:.4px;text-transform:uppercase}
+.h-consultor{
+  text-align:right;font-size:11px;line-height:1.7;
+  background:rgba(255,255,255,.1);border-radius:var(--r-sm);
+  padding:5px 12px;border:1px solid rgba(255,255,255,.15);
+}
+.h-consultor strong{font-weight:700;font-size:12px}
+
+/* ═══════════════════════════════════════════════════
+   LAYOUT
+═══════════════════════════════════════════════════ */
+.container{max-width:1080px;margin:0 auto;padding:20px 16px 48px}
+
+.panel{
+  background:var(--surface);border-radius:var(--r-lg);
+  padding:22px 24px;margin-bottom:16px;
+  box-shadow:var(--shadow-card);
+  border:1px solid var(--border);
+  transition:box-shadow var(--ease);
+}
+.panel:hover{box-shadow:var(--shadow-md)}
+
+.ptitle{
+  font-size:10.5px;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:1px;
+  margin-bottom:18px;display:flex;align-items:center;gap:8px;
+}
+.pnum{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:22px;height:22px;
+  background:linear-gradient(135deg,var(--blue-mid),var(--bd));
+  color:white;border-radius:50%;font-size:11px;font-weight:800;
+  flex-shrink:0;box-shadow:0 2px 6px rgba(27,75,138,.35);
+}
+
+/* ═══════════════════════════════════════════════════
+   GRIDS
+═══════════════════════════════════════════════════ */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.g3{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+
+/* ═══════════════════════════════════════════════════
+   FORM FIELDS
+═══════════════════════════════════════════════════ */
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.field label{
+  font-size:11px;font-weight:700;color:var(--muted);
+  letter-spacing:.5px;text-transform:uppercase;
+}
+.field input{
+  border:1.5px solid var(--border);border-radius:var(--r-sm);
+  padding:11px 14px;font-size:15px;font-weight:600;
+  color:var(--text);outline:none;width:100%;
+  font-family:inherit;background:var(--surface);
+  transition:border-color var(--ease),box-shadow var(--ease),background var(--ease);
+  -webkit-appearance:none;appearance:none;
+}
+.field input:focus{
+  border-color:var(--blue);
+  box-shadow:0 0 0 4px rgba(27,75,138,.12);
+  background:#FAFCFF;
+}
+.field input::placeholder{color:#B0BBC8;font-weight:400}
+
+/* ═══════════════════════════════════════════════════
+   PROJECT TYPE TOGGLE
+═══════════════════════════════════════════════════ */
+.proj-toggle{
+  display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;
+  background:var(--surface);border-radius:var(--r-lg);
+  padding:6px;border:1px solid var(--border);
+  box-shadow:var(--shadow-sm);
+}
+.ptog{
+  flex:1;min-width:110px;padding:11px 14px;border-radius:var(--r-md);
+  border:none;background:transparent;color:var(--muted);
+  font-size:13px;font-weight:700;cursor:pointer;text-align:center;
+  transition:all var(--ease);font-family:inherit;
+  position:relative;
+}
+.ptog:hover{color:var(--blue);background:rgba(27,75,138,.06)}
+.ptog.active{
+  background:linear-gradient(135deg,var(--blue-mid),var(--bd));
+  color:white;box-shadow:0 3px 12px rgba(27,75,138,.4);
+}
+
+/* ═══════════════════════════════════════════════════
+   kWh HERO INPUT
+═══════════════════════════════════════════════════ */
+.kwh-wrap{
+  background:linear-gradient(135deg,#EEF4FF 0%,#F0FDF6 100%);
+  border-radius:var(--r-lg);padding:28px 24px;text-align:center;
+  border:1.5px solid #D4E4FF;position:relative;overflow:hidden;
+}
+.kwh-wrap::before{
+  content:'';position:absolute;top:-40px;right:-40px;
+  width:160px;height:160px;
+  background:radial-gradient(circle,rgba(27,75,138,.07) 0%,transparent 70%);
+  border-radius:50%;pointer-events:none;
+}
+.kwh-wrap label{
+  display:block;font-size:13px;font-weight:800;color:var(--blue);
+  margin-bottom:14px;letter-spacing:.3px;text-transform:uppercase;
+}
+.kwh-wrap input{
+  font-size:42px;font-weight:900;text-align:center;
+  padding:18px 24px;border-radius:var(--r-md);
+  border:2px solid var(--blue);width:100%;max-width:320px;
+  outline:none;font-family:inherit;color:var(--bd);
+  background:white;
+  transition:box-shadow var(--ease),transform var(--ease-spring);
+  -webkit-appearance:none;appearance:none;
+}
+.kwh-wrap input:focus{
+  box-shadow:0 0 0 5px rgba(27,75,138,.14);
+  transform:scale(1.01);
+}
+.kwh-hint{
+  font-size:11px;color:var(--muted);margin-top:10px;
+  font-weight:500;line-height:1.5;
+}
+
+/* ═══════════════════════════════════════════════════
+   SYSTEM CHIPS
+═══════════════════════════════════════════════════ */
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px;justify-content:center}
+.chip{
+  background:var(--surface-2);border-radius:var(--r-md);
+  padding:14px 18px;text-align:center;flex:1;min-width:110px;
+  border:1px solid var(--border);
+  transition:transform var(--ease),box-shadow var(--ease);
+}
+.chip:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.chip-v{font-size:22px;font-weight:800;color:var(--blue);letter-spacing:-.5px}
+.chip-l{font-size:10.5px;color:var(--muted);margin-top:3px;font-weight:600;letter-spacing:.2px}
+.chip-p{background:linear-gradient(135deg,#F0FDF6,#ECFDF5);border-color:#A7F3D0}
+.chip-p .chip-v{color:var(--green);font-size:18px}
+
+/* ═══════════════════════════════════════════════════
+   BATTERIES
+═══════════════════════════════════════════════════ */
+.bats{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+.bat{
+  flex:1;min-width:80px;padding:14px 8px;
+  border:2px solid var(--border);border-radius:var(--r-md);
+  background:var(--surface);cursor:pointer;text-align:center;
+  transition:all var(--ease-spring);position:relative;overflow:hidden;
+}
+.bat::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(27,75,138,.06),transparent);
+  opacity:0;transition:opacity var(--ease);
+}
+.bat:hover{
+  border-color:var(--blue);color:var(--blue);
+  transform:translateY(-3px);box-shadow:var(--shadow-md);
+}
+.bat:hover::after{opacity:1}
+.bat.on{
+  border-color:var(--blue);
+  background:linear-gradient(135deg,var(--blue-mid),var(--bd));
+  color:white;transform:translateY(-2px);
+  box-shadow:0 6px 20px rgba(27,75,138,.4);
+}
+.bat.on::after{opacity:0}
+.bat .bv{font-size:18px;font-weight:800}
+.bat .bs{font-size:9.5px;margin-top:3px;opacity:.75;font-weight:600}
+
+/* ═══════════════════════════════════════════════════
+   PLAN SELECTOR (Sellado)
+═══════════════════════════════════════════════════ */
+.bats.plans .bat{
+  min-width:100px;padding:16px 10px;
+}
+.bat .pv{font-size:15px;font-weight:800}
+.bat .ps{font-size:10px;margin-top:4px;opacity:.75;font-weight:600}
+.bat.plan-on{
+  border-color:var(--orange);
+  background:linear-gradient(135deg,var(--orange),var(--orange-dk));
+  color:white;transform:translateY(-2px);
+  box-shadow:0 6px 20px rgba(247,148,29,.4);
+}
+
+/* ═══════════════════════════════════════════════════
+   FINANCE SECTION HEADERS
+═══════════════════════════════════════════════════ */
+.sec-fin{
+  font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;
+  letter-spacing:1.2px;padding:12px 0 8px;margin-top:6px;
+  border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;
+}
+.sec-fin:first-of-type{border-top:none;margin-top:0;padding-top:0}
+.fin-badge{
+  font-size:9px;font-weight:800;padding:3px 10px;
+  border-radius:30px;letter-spacing:.8px;white-space:nowrap;
+}
+.fb-oriental{background:#EEF4FF;color:#1B4B8A;border:1px solid #BDD3FF}
+.fb-wh{background:#FFF3E0;color:#B45309;border:1px solid #FED7AA}
+.fb-enfin{background:#F5F3FF;color:#5B21B6;border:1px solid #DDD6FE}
+.fb-roofing{background:#F0FDF4;color:#15803D;border:1px solid #A7F3D0}
+
+/* ═══════════════════════════════════════════════════
+   FINANCE CARDS
+═══════════════════════════════════════════════════ */
+.fin-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.fc{
+  background:var(--surface);border:1.5px solid var(--border);
+  border-radius:var(--r-lg);padding:18px;position:relative;
+  transition:all var(--ease);overflow:hidden;
+}
+.fc::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--blue),#4A90D9);
+  opacity:0;transition:opacity var(--ease);
+}
+.fc:not(.off):hover{
+  transform:translateY(-4px);
+  box-shadow:var(--shadow-lg);
+  border-color:var(--blue-mid);
+}
+.fc:not(.off):hover::before{opacity:1}
+.fc.off{opacity:.3;pointer-events:none;filter:grayscale(.4)}
+
+/* Rate pills */
+.rpills{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px}
+.rp{
+  font-size:10px;font-weight:700;padding:4px 9px;border-radius:30px;
+  cursor:pointer;border:1.5px solid var(--border);background:var(--surface-2);
+  color:var(--muted);transition:all var(--ease);font-family:inherit;
+  letter-spacing:.3px;
+}
+.rp:hover{border-color:var(--blue);color:var(--blue)}
+.rp.on{background:var(--blue);color:white;border-color:var(--blue);box-shadow:0 2px 8px rgba(27,75,138,.3)}
+
+/* Card body */
+.ft{font-size:10.5px;font-weight:700;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
+.fp{
+  font-size:32px;font-weight:900;color:var(--text);line-height:1;
+  letter-spacing:-1px;
+}
+.fp span{font-size:14px;font-weight:500;color:var(--muted);letter-spacing:0}
+.fd{border:none;border-top:1px solid #EEF2F7;margin:12px 0}
+.fr{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+.frl{font-size:11px;color:var(--muted);font-weight:500}
+.frv{font-size:13px;font-weight:700;color:var(--text-2)}
+.fnote{font-size:11px;margin-top:10px;padding:8px 10px;border-radius:var(--r-sm);line-height:1.5;font-weight:600}
+.nown{background:#F0FDF4;color:#15803D;border:1px solid #BBF7D0}
+.nwarn{background:#FFF7ED;color:#C2410C;border:1px solid #FED7AA}
+.ninfo{background:#EFF6FF;color:#1E40AF;border:1px solid #BFDBFE}
+
+/* ═══════════════════════════════════════════════════
+   ENFIN CARDS
+═══════════════════════════════════════════════════ */
+.esplit{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.eopt{
+  background:linear-gradient(135deg,#FAFAFF,#F5F3FF);
+  border-radius:var(--r-md);padding:18px;
+  border:1.5px solid #E9D5FF;
+  transition:all var(--ease);
+}
+.eopt:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
+.eopt-t{font-size:10.5px;color:var(--purple);margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.eopt-p{font-size:26px;font-weight:900;color:var(--purple);letter-spacing:-1px}
+.eopt-p span{font-size:13px;font-weight:500;color:var(--muted);letter-spacing:0}
+
+/* ═══════════════════════════════════════════════════
+   LUMA BAR
+═══════════════════════════════════════════════════ */
+.luma-bar{
+  background:linear-gradient(135deg,#FFFBF0,#FFF7ED);
+  border:1.5px solid #FED7AA;border-radius:var(--r-lg);
+  padding:18px 22px;margin-bottom:16px;
+}
+.luma-title{
+  font-size:10.5px;font-weight:800;color:#92400E;
+  text-transform:uppercase;letter-spacing:1px;
+  display:flex;align-items:center;gap:8px;
+}
+.lg{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-top:14px}
+.ls{
+  text-align:center;background:rgba(255,255,255,.7);
+  border-radius:var(--r-sm);padding:10px 8px;
+  border:1px solid rgba(254,215,170,.5);
+}
+.ls .v{font-size:20px;font-weight:800;letter-spacing:-.5px}
+.ls .l{font-size:10px;color:var(--muted);margin-top:3px;font-weight:600;letter-spacing:.3px}
+.ls .v.d{color:var(--red)}
+
+/* ═══════════════════════════════════════════════════
+   ALERTS
+═══════════════════════════════════════════════════ */
+.alert{
+  border-radius:var(--r-sm);padding:11px 16px;
+  font-size:12px;margin-bottom:10px;line-height:1.6;
+  font-weight:500;display:flex;align-items:flex-start;gap:8px;
+}
+.alert-icon{flex-shrink:0;font-size:13px;margin-top:1px}
+.aw{background:#FFF7ED;color:#92400E;border:1px solid #FED7AA}
+.ai{background:#EFF6FF;color:#1E40AF;border:1px solid #BFDBFE}
+.ag{background:#F0FDF4;color:#15803D;border:1px solid #BBF7D0}
+
+/* ═══════════════════════════════════════════════════
+   BUTTONS
+═══════════════════════════════════════════════════ */
+.acts{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.btn{
+  padding:12px 22px;border-radius:var(--r-sm);font-size:13px;font-weight:700;
+  cursor:pointer;border:none;display:flex;align-items:center;gap:8px;
+  transition:all var(--ease);font-family:inherit;letter-spacing:.2px;
+  position:relative;overflow:hidden;
+}
+.btn::after{
+  content:'';position:absolute;inset:0;
+  background:rgba(255,255,255,0);transition:background var(--ease);
+}
+.btn:hover::after{background:rgba(255,255,255,.1)}
+.btn:active{transform:scale(.97)}
+
+.bblue{background:linear-gradient(135deg,var(--blue-mid),var(--bd));color:white;box-shadow:0 3px 12px rgba(27,75,138,.35)}
+.bblue:hover{box-shadow:0 6px 20px rgba(27,75,138,.45);transform:translateY(-1px)}
+.bblue:disabled{opacity:.55;cursor:default;transform:none;box-shadow:none}
+.bgreen{background:linear-gradient(135deg,var(--green),var(--green-dk));color:white;box-shadow:0 3px 12px rgba(22,163,74,.35)}
+.bgreen:hover{box-shadow:0 6px 20px rgba(22,163,74,.45);transform:translateY(-1px)}
+.borg{background:linear-gradient(135deg,var(--orange),var(--orange-dk));color:white;box-shadow:0 3px 12px rgba(247,148,29,.35)}
+.bline{
+  background:var(--surface);color:var(--text-2);
+  border:1.5px solid var(--border);box-shadow:var(--shadow-sm);
+}
+.bline:hover{border-color:var(--blue);color:var(--blue);box-shadow:var(--shadow-md)}
+.btog{
+  background:none;border:none;cursor:pointer;font-size:13px;
+  font-weight:700;color:var(--blue);display:flex;align-items:center;
+  gap:7px;padding:0;font-family:inherit;
+}
+.btog:hover{color:var(--bd)}
+
+/* ═══════════════════════════════════════════════════
+   BACKLOG TABLE
+═══════════════════════════════════════════════════ */
+.bltbl{width:100%;border-collapse:collapse;font-size:12px;margin-top:14px}
+.bltbl thead tr{background:linear-gradient(90deg,#F1F5FB,#F8FAFD)}
+.bltbl th{
+  padding:10px 12px;text-align:left;font-weight:700;
+  color:var(--muted);border-bottom:2px solid var(--border);
+  font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;
+  white-space:nowrap;
+}
+.bltbl td{
+  padding:10px 12px;border-bottom:1px solid #F1F5F9;
+  transition:background var(--ease);
+}
+.bltbl tr:hover td{background:#F8FAFD}
+.bltbl tr:last-child td{border-bottom:none}
+
+/* ═══════════════════════════════════════════════════
+   UPGRADE BOX
+═══════════════════════════════════════════════════ */
+.upgrade-box{
+  background:linear-gradient(135deg,#FFFBF5,#FFF7ED);
+  border:2px solid var(--orange);border-radius:var(--r-lg);
+  padding:18px 22px;margin-bottom:16px;
+  box-shadow:0 4px 16px rgba(247,148,29,.15);
+}
+
+/* ═══════════════════════════════════════════════════
+   RESULTS ANIMATION
+═══════════════════════════════════════════════════ */
+#results{
+  opacity:0;transform:translateY(12px);
+  transition:opacity .4s ease,transform .4s ease;
+  display:none;
+}
+#results.visible{opacity:1;transform:translateY(0)}
+
+/* ═══════════════════════════════════════════════════
+   CHART
+═══════════════════════════════════════════════════ */
+.chart-wrap{position:relative;height:380px;border-radius:var(--r-md);overflow:hidden}
+#chartLeg{
+  display:flex;flex-wrap:wrap;gap:10px;margin-top:16px;
+  font-size:12px;color:var(--muted);
+}
+.leg-item{
+  display:flex;align-items:center;gap:6px;
+  background:var(--surface-2);border-radius:30px;
+  padding:4px 10px;border:1px solid var(--border);
+  font-weight:600;font-size:11px;
+}
+.leg-dot{display:inline-block;width:22px;height:3px;border-radius:4px;flex-shrink:0}
+
+/* ═══════════════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════════════ */
+.fwm{
+  text-align:center;font-size:10.5px;color:#94A3B8;
+  padding:20px 0 28px;line-height:1.8;font-weight:500;
+}
+.empty{text-align:center;padding:36px 20px;color:var(--muted);font-size:13px}
+
+/* Badge in project toggle */
+.proj-badge{
+  display:inline-block;font-size:8.5px;font-weight:800;
+  padding:1px 6px;border-radius:30px;margin-left:4px;
+  background:rgba(255,255,255,.25);letter-spacing:.5px;vertical-align:middle;
+}
+
+/* ═══════════════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════════════ */
+@media(max-width:768px){
+  .fin-grid{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+  .h-consultor{display:none}
+  .container{padding:14px 12px 40px}
+}
+@media(max-width:600px){
+  .g2{grid-template-columns:1fr}
+  .fp{font-size:26px}
+  .chip-v{font-size:19px}
+  .esplit{grid-template-columns:1fr}
+  .kwh-wrap input{font-size:34px;padding:14px 16px}
+  .panel{padding:18px 16px}
+  .bat{min-width:60px;padding:12px 6px}
+}
+@media(max-width:480px){
+  .fin-grid{grid-template-columns:1fr}
+  .chips{gap:8px}
+  .chip{min-width:90px}
+  .proj-toggle{padding:5px}
+  .ptog{font-size:12px;padding:10px 8px}
+}
+@media(min-width:1200px){
+  .container{max-width:1120px}
+  .h-inner{max-width:1120px}
+}
+
+/* ═══════════════════════════════════════════════════
+   PRINT / CAPTURE OVERRIDES
+═══════════════════════════════════════════════════ */
+.capturing .acts{display:none!important}
+.capturing .proj-toggle{pointer-events:none}
+
+/* ═══════════════════════════════════════════════════
+   PROPUESTA MODAL (off-screen render)
+═══════════════════════════════════════════════════ */
+#propuestaWrap{
+  position:fixed;left:-9999px;top:0;
+  width:900px;background:#F4F7FB;
+  font-family:'Inter',system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  pointer-events:none;z-index:-1;
+}
+/* Header propuesta */
+.pq-header{
+  background:linear-gradient(135deg,#0D2E5C 0%,#1B4B8A 55%,#0E5C34 100%);
+  padding:28px 36px;display:flex;align-items:center;justify-content:space-between;
+}
+.pq-logo{height:48px;width:auto}
+.pq-header-center{text-align:center}
+.pq-htitle{color:white;font-size:22px;font-weight:900;letter-spacing:-.5px}
+.pq-hdate{color:rgba(255,255,255,.65);font-size:12px;margin-top:3px;font-weight:500}
+.pq-hconsultor{text-align:right;color:white}
+.pq-hcname{font-size:15px;font-weight:800}
+.pq-hctel{font-size:13px;opacity:.75;margin-top:2px}
+
+/* Body propuesta */
+.pq-body{padding:28px 36px 32px}
+
+/* Cliente + wow savings */
+.pq-top{display:grid;grid-template-columns:1fr 1.4fr;gap:16px;margin-bottom:20px}
+.pq-cliente{
+  background:white;border-radius:16px;padding:20px 22px;
+  border:1px solid #DDE4EE;
+  box-shadow:0 2px 8px rgba(15,27,45,.06);
+}
+.pq-cli-lbl{font-size:9.5px;font-weight:800;color:#94A3B8;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:8px}
+.pq-cli-name{font-size:20px;font-weight:900;color:#0F1B2D;letter-spacing:-.4px}
+.pq-cli-data{font-size:12px;color:#64748B;margin-top:4px;line-height:1.8;font-weight:500}
+
+.pq-wow{
+  background:linear-gradient(135deg,#0D4D2A,#16A34A);
+  border-radius:16px;padding:22px 26px;
+  display:flex;flex-direction:column;justify-content:center;
+}
+.pq-wow-lbl{font-size:9.5px;font-weight:800;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
+.pq-wow-num{font-size:48px;font-weight:900;color:#4ADE80;letter-spacing:-2px;line-height:1}
+.pq-wow-sub{font-size:11.5px;color:rgba(255,255,255,.7);margin-top:6px;font-weight:500}
+
+/* KPI chips */
+.pq-chips{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px}
+.pq-chip{
+  background:white;border-radius:14px;padding:16px 14px;text-align:center;
+  border:1px solid #DDE4EE;box-shadow:0 2px 6px rgba(15,27,45,.05);
+}
+.pq-chip-v{font-size:20px;font-weight:900;letter-spacing:-.5px}
+.pq-chip-l{font-size:10px;color:#64748B;margin-top:4px;font-weight:600;letter-spacing:.2px}
+.pq-chip.blue .pq-chip-v{color:#1B4B8A}
+.pq-chip.blue{background:#F0F6FF;border-color:#C8D9F7}
+.pq-chip.green .pq-chip-v{color:#15803D}
+.pq-chip.green{background:#F0FDF4;border-color:#A7F3D0}
+.pq-chip.orange .pq-chip-v{color:#C05621}
+.pq-chip.orange{background:#FFF7ED;border-color:#FED7AA}
+
+/* Tabla de opciones */
+.pq-table{width:100%;border-radius:16px;overflow:hidden;border:1px solid #DDE4EE;background:white;box-shadow:0 2px 8px rgba(15,27,45,.06)}
+.pq-table-head{
+  background:linear-gradient(90deg,#0D2E5C,#1B4B8A);
+  display:grid;grid-template-columns:1fr auto auto;
+  padding:13px 20px;gap:12px;align-items:center;
+}
+.pq-th{font-size:10px;font-weight:800;color:rgba(255,255,255,.8);text-transform:uppercase;letter-spacing:1px}
+.pq-th.right{text-align:right}
+.pq-th.green-hd{color:#4ADE80}
+.pq-row{
+  display:grid;grid-template-columns:1fr auto auto;
+  padding:14px 20px;gap:12px;align-items:center;
+  border-bottom:1px solid #F1F5F9;transition:background .15s;
+}
+.pq-row:last-child{border-bottom:none}
+.pq-row:nth-child(even){background:#FAFBFD}
+.pq-opt-name{font-size:13px;font-weight:600;color:#3D5066}
+.pq-opt-mo{font-size:16px;font-weight:900;color:#0F1B2D;text-align:right;white-space:nowrap}
+.pq-opt-mo span{font-size:11px;font-weight:500;color:#94A3B8}
+.pq-opt-sav{font-size:15px;font-weight:800;color:#16A34A;text-align:right;white-space:nowrap}
+.pq-opt-sav.purple{color:#7C3AED}
+
+/* Footer propuesta */
+.pq-footer{
+  text-align:center;padding:16px 36px 20px;
+  font-size:10px;color:#94A3B8;font-weight:500;line-height:1.8;
+  border-top:1px solid #DDE4EE;background:white;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="h-inner">
+    <div class="h-left">
+      <img src="WindMar%20Home.png" class="h-logo" alt="Windmar Home">
+      <div class="h-divider"></div>
+      <div>
+        <div class="h-title">Cotizador</div>
+        <div class="h-sub">Solar · Roofing · Jul 2025</div>
+      </div>
+    </div>
+    <div class="h-consultor" id="headerConsultor">
+      <strong>Consultor</strong><br>787-000-0000
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ── Panel 1: Información ── -->
+  <div class="panel">
+    <div class="ptitle"><span class="pnum">1</span> Información del cliente y consultor</div>
+    <div class="g2">
+      <div>
+        <div class="field">
+          <label>Nombre del cliente</label>
+          <input type="text" id="cName" placeholder="Ej: María González" oninput="updateHeader()">
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="cEmail" placeholder="cliente@email.com">
+        </div>
+        <div class="field">
+          <label>Teléfono</label>
+          <input type="tel" id="cPhone" placeholder="787-000-0000">
+        </div>
+      </div>
+      <div>
+        <div class="field">
+          <label>Nombre del consultor</label>
+          <input type="text" id="conName" placeholder="Tu nombre" oninput="updateHeader()">
+        </div>
+        <div class="field">
+          <label>Teléfono consultor</label>
+          <input type="tel" id="conPhone" placeholder="787-000-0000" oninput="updateHeader()">
+        </div>
+        <div class="field">
+          <label>Tarifa LUMA ($/kWh)</label>
+          <input type="number" id="lumaRate" value="0.27" min="0.10" max="0.60" step="0.01" oninput="compute()">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Toggle tipo de proyecto ── -->
+  <div class="proj-toggle">
+    <button class="ptog active" id="togSolar"    onclick="setProj('solar')">☀️ Solo Solar</button>
+    <button class="ptog"        id="togRoofing"  onclick="setProj('roofing')">🏠 Solo Roofing</button>
+    <button class="ptog"        id="togCompleto" onclick="setProj('completo')">⚡ Proyecto Completo</button>
+  </div>
+
+  <!-- ── Panel 2: Consumo (oculto en Roofing) ── -->
+  <div class="panel" id="solarPanel">
+    <div class="ptitle"><span class="pnum">2</span> Consumo anual LUMA</div>
+    <div class="kwh-wrap">
+      <label>¿Cuántos kWh consume al año?</label>
+      <input type="number" id="kwhInput" placeholder="5,832" min="500" oninput="compute()">
+      <div class="kwh-hint">Promedio Puerto Rico: ~5,800 kWh/año · Se encuentra en la factura LUMA</div>
+    </div>
+    <div id="sysChips" style="display:none">
+      <div class="chips" id="chipsRow"></div>
+      <div id="sysAlerts" style="margin-top:12px"></div>
+    </div>
+  </div>
+
+  <!-- ── Panel Sellado (Roofing y Proyecto Completo) ── -->
+  <div class="panel" id="selladoPanel" style="display:none">
+    <div class="ptitle"><span class="pnum">🏠</span> Plan de Sellado de Techo</div>
+    <div class="bats plans" id="planRow" style="margin-bottom:16px">
+      <div class="bat plan-on" id="planSilver" onclick="selPlan('silver')">
+        <div class="pv">Silver</div><div class="ps">$7.25/sq ft</div>
+      </div>
+      <div class="bat" id="planGold" onclick="selPlan('gold')">
+        <div class="pv">Gold</div><div class="ps">$8.00/sq ft</div>
+      </div>
+      <div class="bat" id="planPlatinum" onclick="selPlan('platinum')">
+        <div class="pv">Platinum</div><div class="ps">$9.50/sq ft</div>
+      </div>
+    </div>
+    <div class="field" style="max-width:280px">
+      <label>Área del techo (sq ft)</label>
+      <input type="number" id="sqftInput" placeholder="Ej: 1,800" min="100" oninput="compute()">
+    </div>
+    <div id="selladoInfo" style="margin-top:10px;font-size:13px;color:var(--muted);font-weight:600"></div>
+    <div id="selladoAlerts" style="margin-top:10px"></div>
+  </div>
+
+  <!-- ── Panel 3: Baterías ── -->
+  <div class="panel" id="batPanel" style="display:none">
+    <div class="ptitle"><span class="pnum">3</span> Tesla Powerwall — Baterías</div>
+    <div class="bats" id="batRow"></div>
+    <div id="batInfo" style="font-size:13px;color:var(--muted);margin-top:12px;font-weight:600"></div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       SECCIÓN DE RESULTADOS
+  ══════════════════════════════════════ -->
+  <div id="results">
+
+    <!-- LUMA Proyección (solo Solar) -->
+    <div class="luma-bar" id="lumaBarWrap">
+      <div class="luma-title">⚡ Proyección LUMA — 4% aumento anual</div>
+      <div class="lg" id="lumaStats"></div>
+    </div>
+
+    <!-- Panel 4: Financiamiento Solar -->
+    <div class="panel" id="solarFinPanel">
+      <div class="ptitle"><span class="pnum">4</span> Opciones de Financiamiento</div>
+
+      <div class="sec-fin"><span class="fin-badge fb-oriental">ORIENTAL FINANCIAL</span></div>
+      <div id="oAlerts"></div>
+      <div class="fin-grid" id="oCards"></div>
+
+      <div class="sec-fin" style="margin-top:18px"><span class="fin-badge fb-wh">WH FINANCIAL</span></div>
+      <div id="whAlerts"></div>
+      <div class="fin-grid" id="whCards"></div>
+
+      <div class="sec-fin" id="enfinSec" style="margin-top:18px"><span class="fin-badge fb-enfin">ENFIN — PPA &amp; LEASE</span></div>
+      <div id="enfinBody"></div>
+    </div>
+
+    <!-- Panel Roofing Solo -->
+    <div class="panel" id="roofingFinPanel" style="display:none">
+      <div class="ptitle"><span class="pnum">4</span> WH Financial — Roofing</div>
+      <div id="roofingCards"></div>
+    </div>
+
+    <!-- Panel 5: Gráfica -->
+    <div class="panel" id="chartPanel">
+      <div class="ptitle"><span class="pnum">5</span> Comparativa acumulada a 25 años</div>
+      <div class="chart-wrap">
+        <canvas id="mainChart"></canvas>
+      </div>
+      <div id="chartLeg"></div>
+    </div>
+
+    <!-- Acciones -->
+    <div class="acts" id="actBtns">
+      <button class="btn bgreen" onclick="saveLead()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Guardar lead
+      </button>
+      <button class="btn bblue" id="dlBtn" onclick="downloadImg()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Descargar pantalla
+      </button>
+      <button class="btn borg" id="pqBtn" onclick="downloadPropuesta()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        Descargar propuesta
+      </button>
+    </div>
+
+  </div><!-- /results -->
+
+  <!-- Backlog -->
+  <div class="panel">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <button class="btog" onclick="togBL()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Cotizaciones guardadas
+        <span style="background:var(--blue);color:white;font-size:10px;padding:2px 8px;border-radius:30px;font-weight:800" id="blCount">0</span>
+        <svg id="blarr" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <button class="btn bline" style="font-size:11px;padding:7px 14px" onclick="exportCSV()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Exportar CSV
+      </button>
+    </div>
+    <div id="blBody" style="display:none"></div>
+  </div>
+
+  <div class="fwm">
+    Windmar Home · Cotizador Solar &amp; Roofing<br>
+    Roberto C. Rivera · 787-510-4504<br>
+    Precios de referencia (Tabla Jul 2025). Usar WindMar Pro/Quote para cotización oficial final.
+  </div>
+
+</div><!-- /container -->
+
+<!-- ═══════════════════════════════════════════════
+     PROPUESTA BROCHURE (renderiza off-screen para captura)
+══════════════════════════════════════════════════ -->
+<div id="propuestaWrap">
+  <div id="propuestaCard">
+
+    <!-- Header -->
+    <div class="pq-header">
+      <img src="WindMar%20Home.png" class="pq-logo" alt="Windmar Home">
+      <div class="pq-header-center">
+        <div class="pq-htitle">Cotización Solar</div>
+        <div class="pq-hdate" id="pq-fecha"></div>
+      </div>
+      <div class="pq-hconsultor">
+        <div class="pq-hcname" id="pq-conname"></div>
+        <div class="pq-hctel"  id="pq-contel"></div>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="pq-body">
+
+      <!-- Cliente + Wow Savings -->
+      <div class="pq-top">
+        <div class="pq-cliente">
+          <div class="pq-cli-lbl">Cliente</div>
+          <div class="pq-cli-name" id="pq-cliName"></div>
+          <div class="pq-cli-data" id="pq-cliData"></div>
+        </div>
+        <div class="pq-wow">
+          <div class="pq-wow-lbl" id="pq-wowLbl">Ahorras con Solar</div>
+          <div class="pq-wow-num" id="pq-wowNum"></div>
+          <div class="pq-wow-sub" id="pq-wowSub"></div>
+        </div>
+      </div>
+
+      <!-- KPI chips -->
+      <div class="pq-chips" id="pq-chips"></div>
+
+      <!-- Tabla de opciones de financiamiento -->
+      <div class="pq-table">
+        <div class="pq-table-head">
+          <div class="pq-th">Opción</div>
+          <div class="pq-th right">Pago mensual</div>
+          <div class="pq-th right green-hd">Ahorro vs LUMA</div>
+        </div>
+        <div id="pq-rows"></div>
+      </div>
+
+    </div><!-- /pq-body -->
+
+    <!-- Footer -->
+    <div class="pq-footer">
+      Windmar Home · Precios de referencia (Tabla Jul 2025) · Sujeto a aprobación de crédito<br>
+      <span id="pq-footcon"></span>
+    </div>
+
+  </div><!-- /propuestaCard -->
+</div><!-- /propuestaWrap -->
+
+<script>
+/* ═══════════════════════════════════════════════════
+   TABLAS DE PRECIOS
+═══════════════════════════════════════════════════ */
+const SP={
+  8:10496,9:11808,10:13120,11:14432,12:15744,13:15457,
+  14:16646,15:17835,16:19024,17:20213,18:21402,19:22591,
+  20:23780,21:24969,22:26158,23:27347,24:28536,25:29725,
+  26:30914,27:32103,28:33292,29:34481,30:35670,31:36859,
+  32:38048,33:39237,34:40426,35:41615,36:42804,37:43993,
+  38:45182,39:46371,40:47560,41:48749,42:49938,43:51127,
+  44:52316,45:53505,46:54694,47:55883,48:57072,49:58261,
+  50:59450
+};
+
+const DE={
+  8:14,9:15,10:17,11:19,12:21,13:22,14:24,15:26,
+  16:28,17:29,18:31,19:33,20:34,21:36,22:38,23:40,
+  24:41,25:43,26:45,27:47,28:49,29:51,30:52,31:54,
+  32:56,33:58,34:59,35:61,36:63,37:64,38:66,39:68,
+  40:70,41:71,42:73,43:75,44:77,45:78,46:80,47:82,
+  48:84,49:85,50:87
+};
+
+const TP={0:0,1:13900,2:26400,3:38900,4:51400};
+
+const OPM={
+  8: {a:111,b:114,c:119,d:86, e:93, f:97, g:78, h:88, i:74, j:84},
+  9: {a:125,b:128,c:134,d:96, e:104,f:109,g:88, h:99, i:83, j:95},
+  10:{a:139,b:142,c:149,d:107,e:116,f:122,g:98, h:110,i:93, j:106},
+  11:{a:153,b:157,c:164,d:118,e:127,f:134,g:108,h:121,i:102,j:116},
+  12:{a:167,b:171,c:179,d:129,e:139,f:146,g:117,h:132,i:111,j:127},
+  13:{a:164,b:168,c:175,d:126,e:136,f:143,g:115,h:129,i:109,j:124},
+  14:{a:176,b:181,c:189,d:136,e:147,f:154,g:124,h:139,i:118,j:134},
+  15:{a:189,b:193,c:202,d:146,e:157,f:165,g:133,h:149,i:126,j:143},
+  16:{a:202,b:206,c:216,d:155,e:168,f:176,g:142,h:159,i:134,j:153},
+  17:{a:214,b:219,c:229,d:165,e:178,f:187,g:151,h:169,i:143,j:163},
+  18:{a:227,b:232,c:243,d:175,e:189,f:198,g:159,h:179,i:151,j:172},
+  19:{a:240,b:245,c:256,d:184,e:199,f:209,g:168,h:189,i:160,j:182},
+  20:{a:252,b:258,c:270,d:194,e:210,f:220,g:177,h:199,i:168,j:191},
+  21:{a:265,b:271,c:283,d:204,e:220,f:231,g:186,h:209,i:176,j:201},
+  22:{a:277,b:284,c:297,d:214,e:231,f:242,g:195,h:219,i:185,j:210},
+  23:{a:290,b:297,c:310,d:223,e:241,f:253,g:204,h:229,i:193,j:220},
+  24:{a:303,b:310,c:324,d:233,e:252,f:264,g:213,h:239,i:202,j:230},
+  25:{a:315,b:322,c:337,d:243,e:262,f:275,g:221,h:248,i:210,j:239},
+  26:{a:328,b:335,c:351,d:252,e:273,f:286,g:230,h:258,i:218,j:249},
+  27:{a:340,b:348,c:364,d:262,e:283,f:297,g:239,h:268,i:227,j:258},
+  28:{a:353,b:361,c:378,d:272,e:293,f:308,g:248,h:278,i:235,j:268},
+  29:{a:366,b:374,c:391,d:282,e:304,f:319,g:257,h:288,i:243,j:277},
+  30:{a:378,b:387,c:405,d:291,e:314,f:330,g:266,h:298,i:252,j:287},
+  31:{a:391,b:400,c:418,d:301,e:325,f:341,g:275,h:308,i:260,j:297},
+  32:{a:403,b:413,c:432,d:311,e:335,f:352,g:283,h:318,i:269,j:306},
+  33:{a:416,b:426,c:445,d:320,e:346,f:364,g:292,h:328,i:277,j:316},
+  34:{a:429,b:439,c:459,d:330,e:356,f:375,g:301,h:338,i:285,j:325},
+  35:{a:441,b:451,c:472,d:340,e:367,f:386,g:310,h:348,i:294,j:335},
+  36:{a:454,b:464,c:486,d:350,e:377,f:397,g:319,h:358,i:302,j:344},
+  37:{a:466,b:477,c:499,d:359,e:388,f:408,g:328,h:368,i:311,j:354},
+  38:{a:479,b:490,c:513,d:369,e:398,f:419,g:337,h:378,i:319,j:364},
+  39:{a:492,b:503,c:526,d:379,e:409,f:430,g:345,h:388,i:327,j:373},
+  40:{a:504,b:516,c:540,d:388,e:419,f:441,g:354,h:398,i:336,j:383},
+  41:{a:517,b:529,c:553,d:398,e:430,f:452,g:363,h:407,i:344,j:392},
+  42:{a:529,b:542,c:567,d:408,e:440,f:463,g:372,h:417,i:353,j:402},
+  43:{a:542,b:555,c:580,d:417,e:451,f:474,g:381,h:427,i:361,j:411},
+  44:{a:555,b:568,c:594,d:427,e:461,f:485,g:390,h:437,i:369,j:421},
+  45:{a:567,b:580,c:607,d:437,e:472,f:496,g:399,h:447,i:378,j:430},
+  46:{a:580,b:593,c:621,d:447,e:482,f:507,g:407,h:457,i:386,j:440},
+  47:{a:592,b:606,c:634,d:456,e:493,f:518,g:416,h:467,i:395,j:450},
+  48:{a:605,b:619,c:648,d:466,e:503,f:529,g:425,h:477,i:403,j:459},
+  49:{a:618,b:632,c:661,d:476,e:514,f:540,g:434,h:487,i:411,j:469},
+  50:{a:630,b:645,c:675,d:485,e:524,f:551,g:443,h:497,i:420,j:478}
+};
+
+const TPM={
+  1:{a:147,b:151,c:158,d:114,e:123,f:129,g:104,h:116,i:98,j:112},
+  2:{a:280,b:286,c:300,d:216,e:233,f:245,g:197,h:221,i:186,j:212},
+  3:{a:412,b:422,c:442,d:318,e:343,f:360,g:290,h:325,i:275,j:313},
+  4:{a:545,b:558,c:583,d:420,e:453,f:476,g:383,h:430,i:363,j:414}
+};
+
+const EP={
+  10:{fi:175,es:139,t:1},11:{fi:191,es:151,t:1},12:{fi:206,es:163,t:1},
+  13:{fi:221,es:174,t:1},14:{fi:235,es:186,t:1},15:{fi:249,es:197,t:1},
+  16:{fi:262,es:207,t:1},17:{fi:275,es:218,t:1},18:{fi:288,es:228,t:1},
+  19:{fi:300,es:237,t:1},20:{fi:312,es:247,t:1},21:{fi:324,es:256,t:1},
+  22:{fi:335,es:265,t:2},23:{fi:346,es:273,t:2},24:{fi:356,es:282,t:2},
+  25:{fi:365,es:288,t:2},26:{fi:377,es:298,t:2},27:{fi:389,es:307,t:2},
+  28:{fi:400,es:316,t:2},29:{fi:411,es:325,t:2},30:{fi:422,es:333,t:2},
+  31:{fi:432,es:341,t:2},32:{fi:442,es:349,t:2},33:{fi:451,es:357,t:2},
+  34:{fi:460,es:364,t:2},35:{fi:469,es:371,t:2},36:{fi:477,es:377,t:2},
+  37:{fi:485,es:383,t:2},38:{fi:499,es:395,t:2}
+};
+
+const ORIENTAL_RATES={
+  a:0.0499,b:0.0549,c:0.0649,
+  d:0.0549,e:0.0669,f:0.0749,
+  g:0.0649,h:0.0799,
+  i:0.0699,j:0.0849
+};
+
+const WH_TERMS=[
+  {key:'wh10',label:'10 años',yrs:10,rate:0.0699,color:'#C05621'},
+  {key:'wh15',label:'15 años',yrs:15,rate:0.0799,color:'#B7791F'},
+  {key:'wh20',label:'20 años',yrs:20,rate:0.0899,color:'#2C7A7B'},
+  {key:'wh25',label:'25 años',yrs:25,rate:0.0999,color:'#276749'}
+];
+
+const PLAN_PRICE={silver:7.25,gold:8.00,platinum:9.50};
+
+const WH_ROOF_BASE={
+  silver:  {yr7:126,yr10:107},
+  gold:    {yr7:139,yr10:118},
+  platinum:{yr7:165,yr10:140}
+};
+
+const TERMS=[
+  {key:'t10',label:'10 años',yrs:10,rates:[{k:'a',r:'4.99%'},{k:'b',r:'5.49%'},{k:'c',r:'6.49%'}],color:'#2560A8'},
+  {key:'t15',label:'15 años',yrs:15,rates:[{k:'d',r:'5.49%'},{k:'e',r:'6.69%'},{k:'f',r:'7.49%'}],color:'#3B6D11'},
+  {key:'t20',label:'20 años',yrs:20,needsBat:true,rates:[{k:'g',r:'6.49%'},{k:'h',r:'7.99%'}],color:'#7F77DD'},
+  {key:'t25',label:'25 años',yrs:25,needsBat:true,rates:[{k:'i',r:'6.99%'},{k:'j',r:'8.49%'}],color:'#1D9E75'}
+];
+
+/* ═══════════════════════════════════════════════════
+   ESTADO
+═══════════════════════════════════════════════════ */
+const ST={
+  kwh:0,panels:0,panelsDisplay:0,bats:0,
+  rates:{t10:'a',t15:'d',t20:'g',t25:'i'},
+  chart:null,leads:[],upgrade22:false,
+  proyecto:'solar',
+  roofPlan:'silver',
+  sqft:0,
+  lm0:0,lt25:0
+};
+
+/* ═══════════════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════════════ */
+const fmt = n => '$' + Math.round(n).toLocaleString('en-US');
+const fmtD = n => '$' + Number(n).toFixed(2);
+const gv = id => parseFloat(document.getElementById(id).value) || 0;
+const gs = id => document.getElementById(id).value.trim();
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+
+function calcPanels(kwh){ return Math.ceil(kwh / 1533 / 0.41); }
+function kw(p){ return ((p * 410) / 1000).toFixed(2); }
+function totalPrice(p, b){ return (SP[p] || 0) + (TP[b] || 0); }
+
+function oMonthly(p, b, rk){
+  const s = (OPM[p] || {})[rk] || 0;
+  const bt = b > 0 ? ((TPM[b] || {})[rk] || 0) : 0;
+  return s + bt;
+}
+
+function termOK(term, p, b){
+  if(term.needsBat && b === 0) return false;
+  if(p <= 11 && b === 0 && (term.key === 't20' || term.key === 't25')) return false;
+  // En Proyecto Completo el total incluye solar + roofing para el umbral de $15k
+  const tot = totalPrice(p, b);
+  const rCostForLimit = ST.proyecto === 'completo' && ST.sqft >= 100
+    ? roofCost(ST.sqft, ST.roofPlan) : 0;
+  const totalConRoof = tot + rCostForLimit;
+  if(totalConRoof < 15000 && term.key !== 't10') return false;
+  if(ST.proyecto === 'completo' && (term.key === 't20' || term.key === 't25')) return false;
+  return !!(OPM[p]);
+}
+
+function eaToMonthly(ea){ return Math.pow(1 + ea, 1/12) - 1; }
+
+function amortize(principal, ea, yrs){
+  const r = eaToMonthly(ea), n = yrs * 12;
+  if(r === 0) return Math.round(principal / n);
+  return Math.round(principal * (r * Math.pow(1+r,n)) / (Math.pow(1+r,n) - 1));
+}
+
+function roofCost(sqft, plan){ return sqft * (PLAN_PRICE[plan] || 7.25); }
+
+function whRoofMonthly(sqft, plan, termYrs){
+  const base = WH_ROOF_BASE[plan] || WH_ROOF_BASE.silver;
+  return Math.round(sqft / 1000 * (termYrs === 7 ? base.yr7 : base.yr10));
+}
+
+function orientalAmortize(principal, rk, yrs){
+  const r = (ORIENTAL_RATES[rk] || 0.0549) / 12;
+  const n = yrs * 12;
+  return Math.round(principal * (r * Math.pow(1+r,n)) / (Math.pow(1+r,n) - 1));
+}
+
+function roofLimitOK(solarCost, roofingCost, hasBats, financier){
+  const total = solarCost + roofingCost;
+  if(!total) return {ok:true, pct:0, limit:50};
+  const pct = Math.round(roofingCost / total * 100);
+  const limit = (financier === 'oriental' && hasBats) ? 30 : 50;
+  return {ok: pct <= limit, pct, limit};
+}
+
+function enfinCumul(start, esc, yrs){
+  let t = 0;
+  for(let y = 1; y <= yrs; y++) t += start * Math.pow(1 + esc, y-1) * 12;
+  return Math.round(t);
+}
+
+/* ═══════════════════════════════════════════════════
+   PROYECTO TOGGLE
+═══════════════════════════════════════════════════ */
+function setProj(mode){
+  ST.proyecto = mode;
+  ['solar','roofing','completo'].forEach(m => {
+    document.getElementById('tog' + cap(m)).classList.toggle('active', m === mode);
+  });
+  const isRoof = mode === 'roofing', isComp = mode === 'completo';
+  document.getElementById('solarPanel').style.display = isRoof ? 'none' : 'block';
+  document.getElementById('selladoPanel').style.display = isRoof || isComp ? 'block' : 'none';
+  const r = document.getElementById('results');
+  r.style.display = 'none'; r.classList.remove('visible');
+  document.getElementById('batPanel').style.display = 'none';
+  document.getElementById('sysChips').style.display = 'none';
+  document.getElementById('kwhInput').value = '';
+  document.getElementById('sqftInput').value = '';
+  ST.kwh = 0; ST.panels = 0; ST.sqft = 0;
+}
+
+function selPlan(plan){
+  ST.roofPlan = plan;
+  ['silver','gold','platinum'].forEach(p => {
+    const el = document.getElementById('plan' + cap(p));
+    el.classList.toggle('plan-on', p === plan);
+    el.classList.toggle('on', false);
+  });
+  compute();
+}
+
+/* ═══════════════════════════════════════════════════
+   HEADER DINÁMICO
+═══════════════════════════════════════════════════ */
+function updateHeader(){
+  const con = gs('conName'), tel = gs('conPhone');
+  const el = document.getElementById('headerConsultor');
+  el.innerHTML = `<strong>${con || 'Consultor'}</strong><br>${tel || '787-000-0000'}`;
+}
+
+/* ═══════════════════════════════════════════════════
+   COMPUTE PRINCIPAL
+═══════════════════════════════════════════════════ */
+function compute(){
+  const mode = ST.proyecto;
+
+  if(mode === 'roofing'){
+    const sqft = gv('sqftInput');
+    ST.sqft = sqft;
+    const ri = document.getElementById('selladoInfo');
+    if(sqft < 100){
+      document.getElementById('results').style.display = 'none';
+      document.getElementById('results').classList.remove('visible');
+      ri.textContent = '';
+      return;
+    }
+    ri.innerHTML = `<strong>${sqft.toLocaleString()} sq ft · ${cap(ST.roofPlan)}</strong> = ${fmt(roofCost(sqft, ST.roofPlan))}`;
+    renderRoofingResults();
+    return;
+  }
+
+  const kwh = gv('kwhInput');
+  ST.kwh = kwh;
+  const sqft = mode === 'completo' ? gv('sqftInput') : 0;
+  ST.sqft = sqft;
+
+  if(kwh < 500){
+    document.getElementById('sysChips').style.display = 'none';
+    document.getElementById('batPanel').style.display = 'none';
+    const r = document.getElementById('results');
+    r.style.display = 'none'; r.classList.remove('visible');
+    return;
+  }
+
+  const p = calcPanels(kwh);
+  ST.panels = p;
+  if(!ST.upgrade22) ST.panelsDisplay = p;
+  renderSysInfo(p, kwh);
+  if(ST.upgrade22 && p !== 20 && p !== 21) ST.upgrade22 = false;
+  ST.panelsDisplay = ST.upgrade22 ? 22 : p;
+  document.getElementById('batPanel').style.display = 'block';
+  renderBats(ST.panelsDisplay);
+  renderUpgradeOption(p);
+
+  if(mode === 'completo'){
+    const ri = document.getElementById('selladoInfo');
+    if(sqft >= 100){
+      ri.innerHTML = `<strong>${sqft.toLocaleString()} sq ft · ${cap(ST.roofPlan)}</strong> = ${fmt(roofCost(sqft, ST.roofPlan))}`;
+    } else {
+      ri.textContent = 'Ingresa el área del techo para ver el Proyecto Completo.';
+    }
+  }
+
+  renderResults();
+}
+
+/* ═══════════════════════════════════════════════════
+   RENDER SYS INFO
+═══════════════════════════════════════════════════ */
+function renderSysInfo(p, kwh){
+  document.getElementById('sysChips').style.display = 'block';
+  const price = SP[p];
+  const daily = DE[p] || Math.round(p * 410 * 1533 / 365 / 1000);
+  document.getElementById('chipsRow').innerHTML = `
+    <div class="chip"><div class="chip-v">${p}</div><div class="chip-l">Paneles (410W c/u)</div></div>
+    <div class="chip"><div class="chip-v">${kw(p)} kW</div><div class="chip-l">Capacidad instalada</div></div>
+    <div class="chip"><div class="chip-v">${daily} kWh</div><div class="chip-l">Producción diaria est.</div></div>
+    ${price ? `<div class="chip chip-p"><div class="chip-v">${fmt(price)}</div><div class="chip-l">Precio base s/batería</div></div>` : ''}
+  `;
+  let alerts = '';
+  if(p < 8) alerts += mkAlert('aw','⚠️',`El consumo calcula ${p} paneles. Mínimo es 8. Verifica la factura.`);
+  if(p > 72) alerts += mkAlert('aw','⚠️',`Máximo residencial: 72 paneles. Este sistema requiere ${p}.`);
+
+  if(!SP[p] && p >= 8 && p <= 72) alerts += mkAlert('aw','⚠️',`Panel ${p} fuera de tablas estándar. Consulta WindMar Pro.`);
+  document.getElementById('sysAlerts').innerHTML = alerts;
+}
+
+function mkAlert(cls, icon, msg){
+  return `<div class="alert ${cls}"><span class="alert-icon">${icon}</span><span>${msg}</span></div>`;
+}
+
+/* ═══════════════════════════════════════════════════
+   RENDER BATERÍAS
+═══════════════════════════════════════════════════ */
+function renderBats(p){
+  let html = '';
+  for(let b = 0; b <= 4; b++){
+    const on = ST.bats === b;
+    html += `<div class="bat${on?' on':''}" onclick="selBat(${b})">
+      <div class="bv">${b === 0 ? '0' : b + '×'}</div>
+      <div class="bs">${b === 0 ? 'Battery Ready' : 'Tesla'}</div>
+      <div class="bs">${b === 0 ? 'Sin batería' : fmt(TP[b])}</div>
+    </div>`;
+  }
+  document.getElementById('batRow').innerHTML = html;
+  const tot = totalPrice(p, ST.bats);
+  document.getElementById('batInfo').innerHTML = ST.bats > 0
+    ? `Total: <strong>${fmt(tot)}</strong> = sistema ${fmt(SP[p]||0)} + ${ST.bats} batería${ST.bats>1?'s':''} ${fmt(TP[ST.bats])}`
+    : `Total sistema (sin batería): <strong>${fmt(tot)}</strong>`;
+}
+
+function selBat(b){ ST.bats = b; renderBats(ST.panelsDisplay); renderResults(); }
+function setRate(tk, rk){ ST.rates[tk] = rk; renderResults(); }
+
+/* ═══════════════════════════════════════════════════
+   UPGRADE 22 PANELES
+═══════════════════════════════════════════════════ */
+function renderUpgradeOption(calcP){
+  const existing = document.getElementById('upgradeBox');
+  if(existing) existing.remove();
+  if(calcP !== 20 && calcP !== 21) return;
+  const box = document.createElement('div');
+  box.id = 'upgradeBox';
+  box.className = 'upgrade-box';
+  const isOn = ST.upgrade22;
+  box.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap">
+      <div>
+        <div style="font-size:13px;font-weight:800;color:var(--orange-dk);margin-bottom:4px">⚡ Opción de mejora disponible</div>
+        <div style="font-size:12px;color:var(--text-2);line-height:1.5">
+          Sistema calculado: <strong>${calcP} paneles</strong>. Puedes ofrecerle subir a
+          <strong>22 paneles + 2 baterías Tesla</strong> para mayor cobertura.
+        </div>
+      </div>
+      <button onclick="toggleUpgrade22(${calcP})" class="btn ${isOn?'borg':'bline'}" style="white-space:nowrap;flex-shrink:0">
+        ${isOn ? '✓ Mostrando 22 + 2 Tesla' : 'Ver 22 paneles + 2 Tesla'}
+      </button>
+    </div>
+    ${isOn ? `<div style="margin-top:10px;font-size:11px;color:var(--muted);background:rgba(255,255,255,.6);border-radius:var(--r-sm);padding:8px 12px;border:1px solid rgba(247,148,29,.2)">
+      Mostrando precios para 22 paneles con 2 baterías Tesla. Haz clic de nuevo para volver a ${calcP} paneles.
+    </div>` : ''}
+  `;
+  document.getElementById('batPanel').insertAdjacentElement('afterend', box);
+}
+
+function toggleUpgrade22(calcP){
+  ST.upgrade22 = !ST.upgrade22;
+  ST.panelsDisplay = ST.upgrade22 ? 22 : calcP;
+  if(ST.upgrade22) ST.bats = 2;
+  renderBats(ST.panelsDisplay);
+  renderUpgradeOption(calcP);
+  renderResults();
+}
+
+/* ═══════════════════════════════════════════════════
+   RENDER RESULTS (SOLAR / COMPLETO)
+═══════════════════════════════════════════════════ */
+function renderResults(){
+  const {panelsDisplay:p, bats:b, rates, kwh, proyecto, roofPlan, sqft} = ST;
+  if(!p || p < 8 || p > 72) return;
+
+  const el = document.getElementById('results');
+  if(el.style.display === 'none'){
+    el.style.display = 'block';
+    requestAnimationFrame(() => el.classList.add('visible'));
+  }
+
+  const isComp = proyecto === 'completo';
+  document.getElementById('solarFinPanel').style.display = 'block';
+  document.getElementById('roofingFinPanel').style.display = 'none';
+  document.getElementById('chartPanel').style.display = 'block';
+
+  const lumaRate = gv('lumaRate') || 0.27;
+  const lm0 = (kwh / 12) * lumaRate;
+  const lt25 = lm0 * 12 * ((Math.pow(1.04,25) - 1) / 0.04);
+  const lm25 = lm0 * Math.pow(1.04, 24);
+  ST.lm0 = lm0; ST.lt25 = lt25;
+
+  // Barra LUMA solo en modo Solar
+  const lumaBar = document.getElementById('lumaBarWrap');
+  if(isComp){
+    lumaBar.style.display = 'none';
+  } else {
+    lumaBar.style.display = '';
+    document.getElementById('lumaStats').innerHTML = `
+      <div class="ls"><div class="v">${fmtD(lm0)}</div><div class="l">Factura LUMA hoy/mes</div></div>
+      <div class="ls"><div class="v d">${fmtD(lm25)}</div><div class="l">LUMA proyectado año 25</div></div>
+      <div class="ls"><div class="v d">${fmt(lt25)}</div><div class="l">Total acumulado 25 años</div></div>
+    `;
+  }
+
+  const tot = totalPrice(p, b);
+  const rCostAlert = isComp && sqft >= 100 ? roofCost(sqft, roofPlan) : 0;
+  const totConRoof = tot + rCostAlert;
+  let oa = '';
+  if(totConRoof < 15000) oa += mkAlert('ai','ℹ️',`Proyecto bajo $15,000 (total: ${fmt(totConRoof)}): Oriental solo financia a <strong>10 años</strong>. Agrega paneles o roofing para habilitar 15 años.`);
+  if(p <= 11 && b === 0) oa += mkAlert('ai','ℹ️','Sistema Battery Ready (8-11 paneles sin batería): disponible solo a 10 o 15 años.');
+  document.getElementById('oAlerts').innerHTML = oa;
+
+  // Pre-calcular pronto Oriental (Proyecto Completo)
+  let oriPronto = 0, oriFinancedRoof = 0, oriLimitPct = 50;
+  if(isComp && sqft >= 100){
+    const rCostChk = roofCost(sqft, roofPlan);
+    const chk = roofLimitOK(tot, rCostChk, b > 0, 'oriental');
+    oriLimitPct = chk.limit;
+    if(!chk.ok){
+      const lf = chk.limit / 100;
+      oriPronto = Math.ceil(rCostChk - lf/(1-lf)*tot);
+      oriFinancedRoof = rCostChk - oriPronto;
+    } else {
+      oriFinancedRoof = rCostChk;
+    }
+  }
+
+  // ── Oriental Cards ──
+  let cards = '';
+  TERMS.forEach(term => {
+    const avail = termOK(term, p, b);
+    const rk = rates[term.key];
+    const mo = oMonthly(p, b, rk);
+    const rCost = isComp && sqft >= 100 ? roofCost(sqft, roofPlan) : 0;
+    const roofMo = isComp && sqft >= 100 && avail ? orientalAmortize(oriFinancedRoof, rk, term.yrs) : 0;
+    const totalMo = mo + roofMo;
+    const totalPaid = totalMo * 12 * term.yrs;
+    const sav25 = Math.round(lt25 - (mo * 12 * term.yrs));
+
+    let pills = '<div class="rpills">';
+    term.rates.forEach(r => {
+      pills += `<button class="rp${rk===r.k?' on':''}" onclick="setRate('${term.key}','${r.k}')">${r.r}</button>`;
+    });
+    pills += '</div>';
+
+    let note = '';
+    if(!avail && term.needsBat && b === 0){
+      note = `<div class="fnote nwarn">⚠️ Requiere mínimo 1 batería Tesla</div>`;
+    } else if(!avail && tot < 15000){
+      note = `<div class="fnote nwarn">⚠️ Monto mínimo $15,000 no alcanzado</div>`;
+    } else if(avail && oriPronto > 0 && isComp && sqft >= 100){
+      note = `<div class="fnote nwarn">⚠️ Pronto de ${fmt(oriPronto)} sobre el sellado para cumplir el ${oriLimitPct}%.</div>`;
+    } else if(avail && !isComp && sav25 > 0){
+      note = `<div class="fnote nown">✓ Ahorras ~${fmt(sav25)} en 25 años vs LUMA</div>`;
+    }
+
+    let breakdown = '';
+    if(isComp && sqft >= 100 && roofMo > 0){
+      breakdown = `
+        <div class="fr"><span class="frl">Solar</span><span class="frv">$${mo.toLocaleString()}/mes</span></div>
+        <div class="fr"><span class="frl">Sellado (${roofPlan})${oriPronto > 0 ? ' financiado' : ''}</span><span class="frv">$${roofMo.toLocaleString()}/mes</span></div>
+        <hr class="fd">`;
+    }
+
+    cards += `<div class="fc${!avail?' off':''}">
+      ${pills}
+      <div class="ft">${term.label}</div>
+      <div class="fp">$${totalMo.toLocaleString()}<span>/mes</span></div>
+      <hr class="fd">
+      ${breakdown}
+      <div class="fr"><span class="frl">Precio ${isComp && sqft >= 100 ? 'proyecto' : 'sistema'}</span><span class="frv">${fmt(tot + rCost)}</span></div>
+      ${oriPronto > 0 && isComp && sqft >= 100 ? `<div class="fr"><span class="frl">Pronto requerido</span><span class="frv">${fmt(oriPronto)}</span></div>` : ''}
+      <div class="fr"><span class="frl">Total pagado</span><span class="frv">${fmt(totalPaid)}</span></div>
+      ${note}
+    </div>`;
+  });
+  document.getElementById('oCards').innerHTML = cards;
+
+  // Alerta sellado Oriental
+  if(isComp && sqft >= 100){
+    const rCA = roofCost(sqft, roofPlan);
+    const chkA = roofLimitOK(tot, rCA, b > 0, 'oriental');
+    let sa = '';
+    if(!chkA.ok){
+      const pronto = Math.ceil(rCA - chkA.limit/100/(1-chkA.limit/100)*tot);
+      sa = mkAlert('aw','⚠️',`El sellado representa el <strong>${chkA.pct}%</strong> del proyecto. Con Oriental ${b>0?'+ batería':'sin batería'}, el máximo es <strong>${chkA.limit}%</strong>. Pronto requerido: <strong>${fmt(pronto)}</strong> sobre el sellado.`);
+    }
+    document.getElementById('selladoAlerts').innerHTML = sa;
+  } else {
+    document.getElementById('selladoAlerts').innerHTML = '';
+  }
+
+  // ── WH Financial ──
+  renderWHCards(p, b, isComp, roofPlan, sqft);
+
+  // ── Enfin ──
+  const ed = EP[p];
+  let enfinHtml = '';
+  if(isComp){
+    enfinHtml = mkAlert('ai','ℹ️','Enfin (PPA/Lease) no aplica a Proyectos Completos con roofing. Aplica para Solo Solar.');
+  } else if(p < 10){
+    enfinHtml = mkAlert('aw','⚠️',`Enfin requiere mínimo 10 paneles. Este sistema tiene ${p} paneles — solo aplica Oriental.`);
+  } else if(!ed){
+    enfinHtml = mkAlert('ai','ℹ️',`Sistemas de ${p} paneles con Enfin incluyen ${p <= 56 ? '3' : '4'} Tesla Powerwalls. Pagos exactos: consultar WindMar Pro.`);
+  } else {
+    const fiTotal = ed.fi * 12 * 25;
+    const esTotal = enfinCumul(ed.es, 0.0299, 25);
+    enfinHtml = `
+      <div class="fnote ninfo" style="margin-bottom:12px;font-size:12px">
+        ⚡ <strong>Incluye ${ed.t} Tesla Powerwall${ed.t > 1 ? 's' : ''}</strong> — Sin inversión inicial
+      </div>
+      <div class="esplit">
+        <div class="eopt">
+          <div class="eopt-t">PPA Fijo · 25 años</div>
+          <div class="eopt-p">$${ed.fi}<span>/mes</span></div>
+          <hr class="fd" style="margin:10px 0">
+          <div class="fr"><span class="frl">Total 25 años</span><span class="frv">${fmt(fiTotal)}</span></div>
+        </div>
+        <div class="eopt">
+          <div class="eopt-t">Escalonado +2.99%/año</div>
+          <div class="eopt-p">$${ed.es}<span>/mes inicial</span></div>
+          <hr class="fd" style="margin:10px 0">
+          <div class="fr"><span class="frl">Total 25 años</span><span class="frv">${fmt(esTotal)}</span></div>
+        </div>
+      </div>
+    `;
+  }
+  document.getElementById('enfinBody').innerHTML = enfinHtml;
+
+  renderChart(p, b, rates, lm0);
+}
+
+/* ═══════════════════════════════════════════════════
+   WH FINANCIAL CARDS
+═══════════════════════════════════════════════════ */
+function renderWHCards(p, b, isComp, roofPlan, sqft){
+  const tot = totalPrice(p, b);
+  const rCost = isComp && sqft >= 100 ? roofCost(sqft, roofPlan) : 0;
+  const lt25 = ST.lt25 || 0;
+  document.getElementById('whAlerts').innerHTML = '';
+
+  let whPronto = 0, whFinancedRoof = rCost;
+  if(isComp && sqft >= 100){
+    const chk = roofLimitOK(tot, rCost, b > 0, 'wh');
+    if(!chk.ok){
+      whPronto = Math.ceil(rCost - 0.5/(1-0.5)*tot);
+      whFinancedRoof = rCost - whPronto;
+    }
+  }
+
+  let cards = '';
+  WH_TERMS.forEach(term => {
+    if(isComp && term.yrs > 15) return;
+    const principal = isComp && sqft >= 100 ? tot + whFinancedRoof : tot;
+    const mo = amortize(principal, term.rate, term.yrs);
+    const total = mo * 12 * term.yrs;
+    const moSolarOnly = amortize(tot, term.rate, term.yrs);
+    const sav25 = Math.round(lt25 - moSolarOnly * 12 * term.yrs);
+
+    let note = '';
+    if(whPronto > 0){
+      note = `<div class="fnote nwarn">⚠️ Pronto de ${fmt(whPronto)} sobre el sellado para cumplir el 50%.</div>`;
+    } else if(!isComp && sav25 > 0){
+      note = `<div class="fnote nown">✓ Ahorras ~${fmt(sav25)} en 25 años vs LUMA</div>`;
+    }
+
+    let breakdown = '';
+    if(isComp && sqft >= 100){
+      const moRoof = amortize(whFinancedRoof, term.rate, term.yrs);
+      breakdown = `
+        <div class="fr"><span class="frl">Solar</span><span class="frv">$${moSolarOnly.toLocaleString()}/mes</span></div>
+        <div class="fr"><span class="frl">Sellado (${roofPlan})${whPronto > 0 ? ' financiado' : ''}</span><span class="frv">$${moRoof.toLocaleString()}/mes</span></div>
+        <hr class="fd">`;
+    }
+    cards += `<div class="fc">
+      <div class="ft" style="color:${term.color}">${term.label} · ${(term.rate*100).toFixed(2)}% EA</div>
+      <div class="fp">$${mo.toLocaleString()}<span>/mes</span></div>
+      <hr class="fd">
+      ${breakdown}
+      <div class="fr"><span class="frl">Precio ${isComp && sqft >= 100 ? 'proyecto' : 'sistema'}</span><span class="frv">${fmt(tot + rCost)}</span></div>
+      ${whPronto > 0 ? `<div class="fr"><span class="frl">Pronto requerido</span><span class="frv">${fmt(whPronto)}</span></div>` : ''}
+      <div class="fr"><span class="frl">Total pagado</span><span class="frv">${fmt(total)}</span></div>
+      ${note}
+    </div>`;
+  });
+  document.getElementById('whCards').innerHTML = cards;
+}
+
+/* ═══════════════════════════════════════════════════
+   ROOFING SOLO
+═══════════════════════════════════════════════════ */
+function renderRoofingResults(){
+  const {roofPlan, sqft} = ST;
+  if(!sqft || sqft < 100){
+    document.getElementById('results').style.display = 'none';
+    return;
+  }
+  const el = document.getElementById('results');
+  if(el.style.display === 'none'){
+    el.style.display = 'block';
+    requestAnimationFrame(() => el.classList.add('visible'));
+  }
+  document.getElementById('solarFinPanel').style.display = 'none';
+  document.getElementById('roofingFinPanel').style.display = 'block';
+  document.getElementById('chartPanel').style.display = 'none';
+  document.getElementById('lumaBarWrap').style.display = 'none';
+
+  const cost = roofCost(sqft, roofPlan);
+  const planName = cap(roofPlan);
+  const mo7 = whRoofMonthly(sqft, roofPlan, 7);
+  const mo10 = whRoofMonthly(sqft, roofPlan, 10);
+
+  document.getElementById('roofingCards').innerHTML = `
+    ${mkAlert('ai','🏠',`<strong>${planName} · ${sqft.toLocaleString()} sq ft</strong> — Precio estimado: <strong>${fmt(cost)}</strong>`)}
+    <div class="fin-grid">
+      <div class="fc">
+        <div class="ft" style="color:#E65100">WH Financial · 7 años · 7.99%</div>
+        <div class="fp">$${mo7.toLocaleString()}<span>/mes</span></div>
+        <hr class="fd">
+        <div class="fr"><span class="frl">Precio sellado</span><span class="frv">${fmt(cost)}</span></div>
+        <div class="fr"><span class="frl">Total pagado</span><span class="frv">${fmt(mo7*84)}</span></div>
+      </div>
+      <div class="fc">
+        <div class="ft" style="color:#C05621">WH Financial · 10 años · 9.99%</div>
+        <div class="fp">$${mo10.toLocaleString()}<span>/mes</span></div>
+        <hr class="fd">
+        <div class="fr"><span class="frl">Precio sellado</span><span class="frv">${fmt(cost)}</span></div>
+        <div class="fr"><span class="frl">Total pagado</span><span class="frv">${fmt(mo10*120)}</span></div>
+      </div>
+    </div>
+    ${mkAlert('ai','ℹ️','WH Financial · Solo Roofing. Para Solar+Roofing en un solo préstamo selecciona "Proyecto Completo".')}
+  `;
+}
+
+/* ═══════════════════════════════════════════════════
+   GRÁFICA
+═══════════════════════════════════════════════════ */
+function renderChart(p, b, rates, lm0){
+  const yrs = Array.from({length:25}, (_,i) => i+1);
+  let cumL = 0;
+  const lumaD = yrs.map(y => { cumL += lm0 * Math.pow(1.04,y-1) * 12; return Math.round(cumL); });
+  const lines = [{label:'LUMA (sin solar)', d:lumaD, c:'#E24B4A', w:3, dash:[6,4]}];
+
+  TERMS.forEach(term => {
+    const mo = oMonthly(p, b, rates[term.key]);
+    let cum = 0;
+    const d = yrs.map(y => { cum += y <= term.yrs ? mo*12 : 0; return Math.round(cum); });
+    lines.push({label:`Oriental ${term.label}`, d, c:term.color, w:1.8, dash:[]});
+  });
+
+  const ed = EP[p];
+  if(ed && ST.proyecto !== 'completo'){
+    let cF=0, cE=0;
+    lines.push({label:'Enfin Fijo', d:yrs.map(()=>{cF+=ed.fi*12;return Math.round(cF);}), c:'#BA7517', w:1.5, dash:[4,4]});
+    lines.push({label:'Enfin Escalonado', d:yrs.map(y=>{cE+=ed.es*Math.pow(1.0299,y-1)*12;return Math.round(cE);}), c:'#D4537E', w:1.5, dash:[2,5]});
+  }
+
+  const isComp = ST.proyecto === 'completo';
+  const rCostChart = isComp && ST.sqft >= 100 ? roofCost(ST.sqft, ST.roofPlan) : 0;
+  WH_TERMS.forEach(term => {
+    if(isComp && term.yrs > 15) return;
+    const mo = amortize(totalPrice(p,b) + rCostChart, term.rate, term.yrs);
+    let cum = 0;
+    const d = yrs.map(y => { cum += y <= term.yrs ? mo*12 : 0; return Math.round(cum); });
+    lines.push({label:`WH ${term.label}`, d, c:term.color, w:1.5, dash:[4,2]});
+  });
+
+  const datasets = lines.map(l => ({
+    label:l.label, data:l.d, borderColor:l.c, borderWidth:l.w,
+    borderDash:l.dash, pointRadius:0, tension:0.35, fill:false
+  }));
+
+  if(ST.chart) ST.chart.destroy();
+  ST.chart = new Chart(document.getElementById('mainChart').getContext('2d'), {
+    type:'line',
+    data:{labels:yrs.map(y=>`Año ${y}`), datasets},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'rgba(15,27,45,.9)',
+          titleFont:{family:'Inter',size:11,weight:'700'},
+          bodyFont:{family:'Inter',size:12},
+          padding:10,cornerRadius:10,
+          callbacks:{label:c=>` ${c.dataset.label}: ${fmt(c.parsed.y)}`}
+        }
+      },
+      scales:{
+        x:{ticks:{autoSkip:true,maxTicksLimit:8,font:{size:11,family:'Inter'},color:'#94A3B8'},
+           grid:{color:'rgba(0,0,0,0.04)'},border:{display:false}},
+        y:{ticks:{callback:v=>'$'+(v/1000).toFixed(0)+'k',font:{size:11,family:'Inter'},color:'#94A3B8'},
+           grid:{color:'rgba(0,0,0,0.04)'},border:{display:false}}
+      },
+      interaction:{mode:'index',intersect:false}
+    }
+  });
+
+  const leg = document.getElementById('chartLeg');
+  leg.innerHTML = '';
+  lines.forEach(l => {
+    const s = document.createElement('span');
+    s.className = 'leg-item';
+    s.innerHTML = `<span class="leg-dot" style="background:${l.c}"></span>${l.label}`;
+    leg.appendChild(s);
+  });
+}
+
+/* ═══════════════════════════════════════════════════
+   LEADS / BACKLOG
+═══════════════════════════════════════════════════ */
+const LEADS_KEY = 'wm_leads_v2';
+
+function loadLeads(){
+  try {
+    const raw = localStorage.getItem(LEADS_KEY);
+    ST.leads = raw ? JSON.parse(raw) : [];
+    if(!Array.isArray(ST.leads)) ST.leads = [];
+  } catch {
+    ST.leads = [];
+  }
+  document.getElementById('blCount').textContent = ST.leads.length;
+}
+
+function persistLeads(){
+  try { localStorage.setItem(LEADS_KEY, JSON.stringify(ST.leads)); }
+  catch(e) { console.warn('localStorage lleno:', e); }
+}
+
+function saveLead(){
+  if(ST.proyecto !== 'roofing' && !ST.panels) return showToast('Primero ingresa el consumo anual.','warn');
+  if(ST.proyecto === 'roofing' && !ST.sqft) return showToast('Primero ingresa el área del techo.','warn');
+  const name = gs('cName');
+  if(!name) return showToast('Ingresa el nombre del cliente antes de guardar.','warn');
+  const mo15 = ST.proyecto !== 'roofing' ? oMonthly(ST.panels, ST.bats, ST.rates.t15) : 0;
+  const lead = {
+    id: Date.now(),
+    fecha: new Date().toLocaleDateString('es-PR'),
+    cliente: name, email: gs('cEmail'), tel: gs('cPhone'),
+    consultor: gs('conName'), tel_c: gs('conPhone'),
+    proyecto: ST.proyecto,
+    kwh: ST.kwh, paneles: ST.panels,
+    kw: ST.panels ? kw(ST.panels) : '—',
+    baterias: ST.bats,
+    precio: ST.proyecto !== 'roofing' ? totalPrice(ST.panels, ST.bats) : 0,
+    sellado_plan: ST.roofPlan, sellado_sqft: ST.sqft,
+    sellado_precio: ST.sqft ? roofCost(ST.sqft, ST.roofPlan) : 0,
+    mensual_15: mo15, luma: fmtD(ST.lm0 || 0)
+  };
+  ST.leads.push(lead);
+  persistLeads();
+  document.getElementById('blCount').textContent = ST.leads.length;
+  if(blOpen) renderBL();
+  showToast(`✓ Lead guardado: ${name}`,'ok');
+}
+
+function exportCSV(){
+  if(!ST.leads.length) return showToast('No hay leads guardados.','warn');
+  const escCSV = v => `"${String(v||'').replace(/"/g,'""')}"`;
+  const h = ['Fecha','Cliente','Email','Teléfono','Consultor','Tel Consultor','Proyecto',
+             'kWh/año','Paneles','kW','Baterías','Precio Sistema','Sellado Plan',
+             'Sellado sqft','Sellado Precio','Mensual 15yr Oriental','LUMA Hoy'];
+  const rows = ST.leads.map(l => [
+    l.fecha, l.cliente, l.email, l.tel, l.consultor, l.tel_c, l.proyecto,
+    l.kwh, l.paneles, l.kw, l.baterias, l.precio,
+    l.sellado_plan, l.sellado_sqft, l.sellado_precio, l.mensual_15, l.luma
+  ]);
+  const csv = '﻿' + [h,...rows].map(r => r.map(escCSV).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = Object.assign(document.createElement('a'), {href:url, download:`windmar_leads_${new Date().toISOString().split('T')[0]}.csv`});
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+  showToast(`✓ CSV exportado (${ST.leads.length} leads)`,'ok');
+}
+
+let blOpen = false;
+function togBL(){
+  blOpen = !blOpen;
+  document.getElementById('blBody').style.display = blOpen ? 'block' : 'none';
+  document.getElementById('blarr').innerHTML = blOpen
+    ? '<polyline points="18 15 12 9 6 15" stroke="currentColor" stroke-width="2.5" fill="none"/>'
+    : '<polyline points="6 9 12 15 18 9" stroke="currentColor" stroke-width="2.5" fill="none"/>';
+  if(blOpen) renderBL();
+}
+
+function renderBL(){
+  const el = document.getElementById('blBody');
+  if(!ST.leads.length){
+    el.innerHTML = '<div class="empty">No hay leads guardados aún.</div>';
+    return;
+  }
+  let h = `<div style="overflow-x:auto">
+  <table class="bltbl"><thead><tr>
+    <th>Fecha</th><th>Cliente</th><th>Tel</th><th>Proyecto</th>
+    <th>Paneles / kW</th><th>Baterías</th><th>Precio</th><th>Mensual 15yr</th><th>Consultor</th>
+  </tr></thead><tbody>`;
+  ST.leads.forEach(l => {
+    h += `<tr>
+      <td>${l.fecha}</td>
+      <td><strong>${l.cliente}</strong>${l.email?`<br><small style="color:#94A3B8">${l.email}</small>`:''}</td>
+      <td>${l.tel||'—'}</td>
+      <td style="text-transform:capitalize">${l.proyecto||'solar'}</td>
+      <td>${l.paneles||'—'} · ${l.kw||'—'} kW</td>
+      <td>${l.baterias===0?'Battery Ready':l.baterias+' Tesla'}</td>
+      <td>${fmt(l.precio||0)}</td>
+      <td><strong>$${l.mensual_15||0}/mes</strong></td>
+      <td>${l.consultor||'—'}</td>
+    </tr>`;
+  });
+  h += '</tbody></table></div>';
+  el.innerHTML = h;
+}
+
+/* ═══════════════════════════════════════════════════
+   TOAST NOTIFICATION
+═══════════════════════════════════════════════════ */
+function showToast(msg, type='ok'){
+  const t = document.createElement('div');
+  const bg = type === 'ok' ? '#16A34A' : '#D97706';
+  t.style.cssText = `
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:${bg};color:white;padding:12px 22px;border-radius:30px;
+    font-size:13px;font-weight:700;font-family:Inter,sans-serif;
+    box-shadow:0 8px 24px rgba(0,0,0,.25);z-index:9999;
+    opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1);pointer-events:none;
+  `;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  requestAnimationFrame(() => {
+    t.style.opacity = '1';
+    t.style.transform = 'translateX(-50%) translateY(0)';
+  });
+  setTimeout(() => {
+    t.style.opacity = '0';
+    t.style.transform = 'translateX(-50%) translateY(10px)';
+    setTimeout(() => t.remove(), 350);
+  }, 3000);
+}
+
+/* ═══════════════════════════════════════════════════
+   DESCARGAR IMAGEN (brochure mode)
+═══════════════════════════════════════════════════ */
+function downloadImg(){
+  if(typeof html2canvas === 'undefined'){ showToast('Error cargando librería de imagen.','warn'); return; }
+  const btn = document.getElementById('dlBtn');
+  const btns = document.getElementById('actBtns');
+  btn.disabled = true;
+  btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Generando...`;
+  btns.style.display = 'none';
+  document.querySelector('.container').classList.add('capturing');
+  const cname = gs('cName') || 'cotizacion';
+  html2canvas(document.querySelector('.container'), {
+    backgroundColor:'#EDF1F7', scale:2.5, useCORS:true, logging:false,
+    ignoreElements: el => el.id === 'actBtns' || el.classList.contains('proj-toggle')
+  }).then(canvas => {
+    document.querySelector('.container').classList.remove('capturing');
+    btns.style.display = 'flex';
+    btn.disabled = false;
+    btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> ✓ Descargado`;
+    setTimeout(() => {
+      btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Descargar propuesta`;
+    }, 3000);
+    canvas.toBlob(blob => {
+      const url = URL.createObjectURL(blob);
+      const a = Object.assign(document.createElement('a'), {
+        href:url,
+        download:`windmar_${cname.replace(/\s+/g,'_')}_${new Date().toISOString().split('T')[0]}.png`
+      });
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a); URL.revokeObjectURL(url);
+    }, 'image/png');
+  }).catch(e => {
+    document.querySelector('.container').classList.remove('capturing');
+    btns.style.display = 'flex';
+    btn.disabled = false;
+    btn.innerHTML = 'Descargar propuesta';
+    showToast('Error al generar imagen: ' + e.message, 'warn');
+  });
+}
+
+/* ═══════════════════════════════════════════════════
+   PROPUESTA BROCHURE — GENERADOR
+═══════════════════════════════════════════════════ */
+function downloadPropuesta(){
+  if(typeof html2canvas === 'undefined'){ showToast('Error cargando librería.','warn'); return; }
+  const {panelsDisplay:p, bats:b, rates, kwh, proyecto, roofPlan, sqft} = ST;
+
+  // Validaciones mínimas
+  if(proyecto !== 'roofing' && (!p || p < 8)){
+    return showToast('Ingresa el consumo anual primero.','warn');
+  }
+  if(proyecto === 'roofing' && sqft < 100){
+    return showToast('Ingresa el área del techo primero.','warn');
+  }
+
+  const isComp  = proyecto === 'completo';
+  const isRoof  = proyecto === 'roofing';
+  const lumaRate = gv('lumaRate') || 0.27;
+  const lm0  = isRoof ? 0 : (kwh / 12) * lumaRate;
+  const lt25 = lm0 * 12 * ((Math.pow(1.04,25) - 1) / 0.04);
+  const tot  = isRoof ? 0 : totalPrice(p, b);
+  const rCost = sqft >= 100 ? roofCost(sqft, roofPlan) : 0;
+  const totalInv = tot + rCost;
+
+  // ── Header ──
+  const today = new Date().toLocaleDateString('es-PR',{year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('pq-fecha').textContent   = today;
+  document.getElementById('pq-conname').textContent = gs('conName') || 'Consultor';
+  document.getElementById('pq-contel').textContent  = gs('conPhone') || '787-000-0000';
+  document.getElementById('pq-footcon').textContent =
+    (gs('conName') || 'Consultor') + ' · ' + (gs('conPhone') || '787-000-0000');
+
+  // ── Cliente ──
+  const cName  = gs('cName')  || '—';
+  const cEmail = gs('cEmail') || '';
+  const cPhone = gs('cPhone') || '';
+  document.getElementById('pq-cliName').textContent = cName;
+  document.getElementById('pq-cliData').innerHTML =
+    [cEmail, cPhone].filter(Boolean).join('<br>') || '&nbsp;';
+
+  // ── Wow Savings ──
+  let bestSav = 0, bestLabel = '';
+  if(!isRoof && !isComp && lt25 > 0){
+    // Solo Solar: buscar la opción con mayor ahorro vs LUMA
+    TERMS.forEach(term => {
+      if(!termOK(term, p, b)) return;
+      const mo   = oMonthly(p, b, rates[term.key]);
+      const paid = mo * 12 * term.yrs;
+      const sav  = Math.round(lt25 - paid);
+      if(sav > bestSav){ bestSav = sav; bestLabel = `vs LUMA a 25 años · opción ${term.yrs}yr`; }
+    });
+  }
+
+  const wowEl  = document.getElementById('pq-wowNum');
+  const wowSub = document.getElementById('pq-wowSub');
+  if(isRoof){
+    wowEl.textContent  = fmt(rCost);
+    wowSub.textContent = `Sellado ${cap(roofPlan)} · ${sqft.toLocaleString()} sq ft`;
+  } else if(isComp){
+    wowEl.textContent  = fmt(totalInv);
+    wowSub.textContent = `Inversión total solar + techo ${cap(roofPlan)}`;
+  } else {
+    wowEl.textContent  = bestSav > 0 ? fmt(bestSav) : '—';
+    wowSub.textContent = bestLabel || 'Estimado vs LUMA a 25 años';
+  }
+
+  // Ajustar el label del bloque verde según modo
+  document.getElementById('pq-wowLbl').textContent =
+    isRoof ? 'Precio estimado' : isComp ? 'Proyecto Completo' : 'Ahorras con Solar';
+
+  // ── KPI chips ──
+  let chipsHtml = '';
+  if(!isRoof){
+    chipsHtml += `<div class="pq-chip blue"><div class="pq-chip-v">${p}</div><div class="pq-chip-l">Paneles</div></div>`;
+    chipsHtml += `<div class="pq-chip blue"><div class="pq-chip-v">${kw(p)} kW</div><div class="pq-chip-l">Sistema Solar</div></div>`;
+  }
+  if(totalInv > 0){
+    chipsHtml += `<div class="pq-chip green"><div class="pq-chip-v">${fmt(totalInv)}</div><div class="pq-chip-l">Inversión total</div></div>`;
+  }
+  if(isRoof && sqft >= 100){
+    // Solo Roofing: mostrar sqft y plan
+    chipsHtml += `<div class="pq-chip orange"><div class="pq-chip-v">${sqft.toLocaleString()} sq ft</div><div class="pq-chip-l">Área techo</div></div>`;
+    chipsHtml += `<div class="pq-chip blue"><div class="pq-chip-v">${cap(roofPlan)}</div><div class="pq-chip-l">Plan sellado</div></div>`;
+  } else if(isComp && sqft >= 100){
+    // Proyecto Completo: mostrar roofing como chip adicional
+    chipsHtml += `<div class="pq-chip orange"><div class="pq-chip-v">${sqft.toLocaleString()} sq ft</div><div class="pq-chip-l">Techo · ${cap(roofPlan)}</div></div>`;
+  } else if(!isRoof && lm0 > 0){
+    // Solo Solar: mostrar proyección LUMA año 25
+    const lm25 = lm0 * Math.pow(1.04, 24);
+    chipsHtml += `<div class="pq-chip orange"><div class="pq-chip-v">${fmtD(lm25)}/mes</div><div class="pq-chip-l">LUMA año 25</div></div>`;
+  }
+  // Rellenar hasta 4 chips para mantener el grid
+  const chipCount = (chipsHtml.match(/pq-chip/g)||[]).length / 2;
+  for(let i = chipCount; i < 4; i++) chipsHtml += '<div></div>';
+  document.getElementById('pq-chips').innerHTML = chipsHtml;
+
+  // ── Tabla de filas ──
+  let rowsHtml = '';
+
+  if(!isRoof){
+    // Oriental
+    TERMS.forEach(term => {
+      if(!termOK(term, p, b)) return;
+      const rk  = rates[term.key];
+      const mo  = oMonthly(p, b, rk);
+      // En Proyecto Completo, agregar roofing al pago
+      const roofMo = isComp && sqft >= 100
+        ? orientalAmortize(rCost, rk, term.yrs) : 0;
+      const totalMo = mo + roofMo;
+      const paid = mo * 12 * term.yrs;
+      const sav  = lt25 > 0 ? Math.round(lt25 - paid) : null;
+      const label = `Préstamo ${term.yrs} años · ${ORIENTAL_RATES[rk]
+        ? (ORIENTAL_RATES[rk]*100).toFixed(2)+'%' : rates[term.key]}`;
+      rowsHtml += pqRow(label, totalMo, sav, false);
+    });
+
+    // Enfin (Solo Solar)
+    if(!isComp){
+      const ed = EP[p];
+      if(ed){
+        const fiSav = lt25 > 0 ? Math.round(lt25 - ed.fi*12*25) : null;
+        rowsHtml += pqRow(`Enfin PPA Fijo · ${ed.t} Tesla · 25 años`, ed.fi, fiSav, true);
+      }
+    }
+  }
+
+  // Roofing
+  if(isRoof && sqft >= 100){
+    const mo7  = whRoofMonthly(sqft, roofPlan, 7);
+    const mo10 = whRoofMonthly(sqft, roofPlan, 10);
+    rowsHtml += pqRow('WH Financial · 7 años · 7.99%',  mo7,  null, false);
+    rowsHtml += pqRow('WH Financial · 10 años · 9.99%', mo10, null, false);
+  }
+
+  // Proyecto Completo WH
+  if(isComp){
+    WH_TERMS.forEach(term => {
+      if(term.yrs > 15) return;
+      const mo = amortize(totalInv, term.rate, term.yrs);
+      rowsHtml += pqRow(`WH Financial · ${term.yrs} años · ${(term.rate*100).toFixed(2)}% EA`, mo, null, false);
+    });
+  }
+
+  document.getElementById('pq-rows').innerHTML = rowsHtml || '<div style="padding:16px 20px;color:#94A3B8;font-size:13px">Sin opciones disponibles.</div>';
+
+  // ── Captura ──
+  const btn = document.getElementById('pqBtn');
+  btn.disabled = true;
+  btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Generando...`;
+
+  const wrap = document.getElementById('propuestaWrap');
+  wrap.style.left = '-9999px';
+  wrap.style.zIndex = '-1';
+
+  html2canvas(document.getElementById('propuestaCard'), {
+    backgroundColor:'#F4F7FB', scale:2.5, useCORS:true, logging:false,
+    width:900
+  }).then(canvas => {
+    btn.disabled = false;
+    btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> ✓ Descargado`;
+    setTimeout(() => {
+      btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg> Descargar propuesta`;
+    }, 3000);
+    const cname = gs('cName') || 'cotizacion';
+    canvas.toBlob(blob => {
+      const url = URL.createObjectURL(blob);
+      const a = Object.assign(document.createElement('a'), {
+        href: url,
+        download: `propuesta_${cname.replace(/\s+/g,'_')}_${new Date().toISOString().split('T')[0]}.png`
+      });
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a); URL.revokeObjectURL(url);
+      showToast('✓ Propuesta descargada','ok');
+    }, 'image/png');
+  }).catch(e => {
+    btn.disabled = false;
+    btn.innerHTML = 'Descargar propuesta';
+    showToast('Error: ' + e.message,'warn');
+  });
+}
+
+function pqRow(label, mo, sav, isPurple){
+  const savHtml = sav !== null && sav > 0
+    ? `<div class="pq-opt-sav${isPurple?' purple':''}">${fmt(sav)}</div>`
+    : `<div class="pq-opt-sav" style="color:#94A3B8">—</div>`;
+  return `<div class="pq-row">
+    <div class="pq-opt-name">${label}</div>
+    <div class="pq-opt-mo">$${mo.toLocaleString()}<span>/mes</span></div>
+    ${savHtml}
+  </div>`;
+}
+
+/* ═══════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════ */
+loadLeads();
+</script>
+</body>
+</html>

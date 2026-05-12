@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir \"/Users/robertorivera/Curso Claude Code/proyecto completo\")",
+      "Bash(cp \"/Users/robertorivera/Curso Claude Code/claude 1/cotizador.html\" \"/Users/robertorivera/Curso Claude Code/proyecto completo/\")",
+      "Bash(cp \"/Users/robertorivera/Curso Claude Code/claude 1/WindMar Home.png\" \"/Users/robertorivera/Curso Claude Code/proyecto completo/\")"
+    ]
+  }
+}
